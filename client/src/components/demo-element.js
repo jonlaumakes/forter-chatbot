@@ -67,20 +67,25 @@ export class DemoElement extends LitElement {
 
   render() {
     const {name, count} = this;
+    // const listQuestions = [];
 
-    // const questions = html`
-    //   <ul>
-    //     ${_listQuestions.map(
-    //       (question) => html`
-    //           <li>
-    //             ${question.text}
-    //           </li>`
-    //     )}
-    //   </ul>
-    // `;
+
+    const questions = html`
+      <ul>
+        ${this._listQuestions.map(
+          (question) => html`
+              <li>
+                ${question.text}
+              </li>
+              <button>Answer</button>
+              `
+        )}
+      </ul>
+    `;
 
     return html`
       <div>Chatroom</div>
+      ${questions}
       <input id="new-question" type="text" aria-label="New Question">
       <button @click=${this.addQuestion}>Add a question</button>
     `;
