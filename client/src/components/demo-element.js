@@ -1,5 +1,5 @@
-import {LitElement, html} from 'lit';
-import style from './demo-element.css.js';
+import { LitElement, html } from "lit";
+import style from "./demo-element.css.js";
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
 /**
@@ -12,73 +12,78 @@ export class DemoElement extends LitElement {
        * The name to say "Hello" to.
        * @type {string}
        */
-      name: {type: String},
+      name: { type: String },
 
       /**
        * The list of questions
        * @type {array}
        */
-      _listQuestions: { type: Array },
+      listQuestions: { type: Array },
 
       /**
        * The number of times the button has been clicked.
        * @type {number}
        */
-      count: {type: Number},
+      count: { type: Number },
     };
   }
 
   constructor() {
     super();
-    this._listQuestions = [
-      {
-        user: 'chipper',
-        text: 'how do you center a div?'
-      },
-      {
-        user: 'otto',
-        text: 'why does does my stomach hurt?'
-      },
+    this._username = "Chip";
+    this.listQuestions = [
+      // {
+      //   user: "chipper",
+      //   text: "how do you center a div?",
+      // },
+      // {
+      //   user: "otto",
+      //   text: "why does does my stomach hurt?",
+      // },
     ];
-    this.socket = io('http://localhost:3000', {
+    this.socket = io("http://localhost:3000", {
       extraHeaders: {
-        "Access-Control-Allow-Origin": "*"
-    }});
-    this.socket.on('new connection', console.log);
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+    this.socket.on("new connection", (questions) => {
+      console.log("init - questions", questions);
+      this.listQuestions = questions;
+    });
+
+    this.socket.on("add-question", (question) => {
+      console.log("UI - new question", question);
+      this.listQuestions = [...this.listQuestions, question];
+    });
   }
 
   static styles = [style];
 
   get questionInput() {
-    return this.renderRoot?.querySelector('#new-question') ?? null;
+    return this.renderRoot?.querySelector("#new-question") ?? null;
   }
 
   addQuestion() {
-    this._listQuestions = [
-      ...this._listQuestions,
-      {
-        user: 'Me',
-        text: this.questionInput.value
-      }
-    ];
-    this.questionInput.value = '';
-    console.log('added a question to the chat', this._listQuestions);
+    let questionText = this.questionInput.value;
+
+    this.socket.emit("add-question", {
+      user: this._username,
+      text: questionText,
+    });
+    this.questionInput.value = "";
   }
 
   render() {
-    const {name, count} = this;
+    const { name, count } = this;
     // const listQuestions = [];
-
 
     const questions = html`
       <ul>
-        ${this._listQuestions.map(
+        ${this.listQuestions.map(
           (question) => html`
-              <li>
-                ${question.text}
-              </li>
-              <button>Answer</button>
-              `
+            <li>${question.text}</li>
+            <button>Answer</button>
+          `
         )}
       </ul>
     `;
@@ -86,10 +91,10 @@ export class DemoElement extends LitElement {
     return html`
       <div>Chatroom</div>
       ${questions}
-      <input id="new-question" type="text" aria-label="New Question">
+      <input id="new-question" type="text" aria-label="New Question" />
       <button @click=${this.addQuestion}>Add a question</button>
     `;
   }
 }
 
-window.customElements.define('demo-element', DemoElement);
+window.customElements.define("demo-element", DemoElement);
