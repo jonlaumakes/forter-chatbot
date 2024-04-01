@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
     console.log("server - add question", question);
     const newQuestion = {
       ...question,
-      id: randomUUID,
+      id: randomUUID(),
       answers: [],
       created_at: new Date(),
     };
