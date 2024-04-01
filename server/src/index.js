@@ -2,6 +2,7 @@ import express from "express";
 import httpServer from "http";
 import { Server } from "socket.io";
 import cors from "cors";
+import { randomUUID } from "crypto";
 
 const app = express();
 
@@ -17,6 +18,7 @@ http.listen(3000, () => {
 
 const listQuestions = [
   {
+    id: randomUUID(),
     user: "chip",
     text: "how do you center a div?",
     answers: [
@@ -25,16 +27,19 @@ const listQuestions = [
         text: "read the docs!",
       },
     ],
+    created_at: new Date() - 2,
   },
   {
+    id: randomUUID(),
     user: "otto",
     text: "why does does my stomach hurt?",
     answers: [
       {
         user: "chip",
-        text: "stop eating grass",
+        text: "you keep eating grass",
       },
     ],
+    created_at: new Date() - 1,
   },
 ];
 
@@ -59,19 +64,24 @@ io.on("connection", (socket) => {
     console.log("server - add question", question);
     const newQuestion = {
       ...question,
+      id: randomUUID,
       answers: [],
+      created_at: new Date(),
     };
 
     listQuestions.push(newQuestion);
     console.log("questions", listQuestions);
     socket.emit("add-question", newQuestion);
   });
+
+  socket.on("add-answer", (answerData) => {
+    const { answer, questionId } = answerData;
+    console.log("server - add question", questionid, answer);
+
+    // find the question in the list
+    // add the answer to the list of
+    // listQuestions.push(newQuestion);
+    console.log("answered - questions", listQuestions);
+    socket.emit("add-answer", updatedQuestion);
+  });
 });
-
-// app.post("/question", (req, res) => {
-//   console.log("POST - question", req);
-// });
-
-// io.on("ask", (socket) => {
-//   console.log(`ask event: ${socket}`);
-// });
