@@ -55,11 +55,20 @@ export class DemoElement extends LitElement {
       }
     });
 
-    this.socket.on("add-question", (question) => {
-      console.log("UI - new question", question);
+    this.socket.on("question-added", (question) => {
+      console.log("updated question added", question);
       this.listQuestions = [...this.listQuestions, question];
     });
-    // todo: socket for adding an answer
+
+    this.socket.on("added-answer", (updatedQuestion) => {
+      console.log("updated question from an answer sub", updatedQuestion);
+      this.listQuestions = this.listQuestions.map((question) => {
+        if (question.id === updatedQuestion.id) {
+          return updatedQuestion;
+        }
+        return question;
+      });
+    });
   }
 
   static styles = [style];
@@ -73,22 +82,25 @@ export class DemoElement extends LitElement {
   }
 
   addQuestion() {
-    let questionText = this.questionInput.value;
-
-    this.socket.emit("add-question", {
+    const question = {
       user: this._username,
-      text: questionText,
-    });
+      text: this.questionInput.value,
+    };
+
+    this.socket.emit("add-question", question);
     this.questionInput.value = "";
   }
 
   addAnswer() {
     let answerText = this.answerInput.value;
 
-    this.socket.emit("add-answer", {
+    const answer = {
+      questionId: this.questionToAnswer.id || 10000,
       user: this._username,
       text: answerText,
-    });
+    };
+    console.log("add answer submit click", answer);
+    this.socket.emit("add-answer", answer);
     this.answerInput.value = "";
   }
 
@@ -100,22 +112,28 @@ export class DemoElement extends LitElement {
 
   render() {
     // const { name, count } = this;
-    let { questionToAnswer, listQuestions, handleAnswerQuestionClick } = this;
+    let { questionToAnswer, listQuestions } = this;
 
     const questions = html`
       <ul>
         ${listQuestions.map(
           (question, index) => html`
-            <li>${question.text}</li>
-            <li>${`Posted by: ${question.user} at ${question.created_at}`}</li>
-            <button
-              @click=${() => {
-                this.handleAnswerQuestionClick(question);
-              }}
-            >
-              Answer this question
-            </button>
-            <!-- add in mapping for array of answers -->
+            <div>
+              <p>${question.text}</p>
+              <p>${`Posted by: ${question.user} at ${question.created_at}`}</p>
+              <div>
+                ${question.answers.map((answer) => {
+                  return html` <p>${answer.text}</p> `;
+                })}
+              </div>
+              <button
+                @click=${() => {
+                  this.handleAnswerQuestionClick(question);
+                }}
+              >
+                Answer this question
+              </button>
+            </div>
           `
         )}
       </ul>
@@ -132,7 +150,7 @@ export class DemoElement extends LitElement {
       <button @click=${this.addQuestion}>Add a question</button>
       <div>
         <p>${questionToAnswer.text ?? "Select a question to answer!"}</p>
-        <input id="question-answer" type="text" aria-label="New Answer" />
+        <input id="new-answer" type="text" aria-label="New Answer" />
         <button @click=${this.addAnswer}>Submit</button>
       </div>
     `;

@@ -25,9 +25,10 @@ const listQuestions = [
       {
         user: "otto",
         text: "read the docs!",
+        created_at: new Date() - 10000,
       },
     ],
-    created_at: new Date() - 2,
+    created_at: new Date() - 10000,
   },
   {
     id: randomUUID(),
@@ -37,9 +38,10 @@ const listQuestions = [
       {
         user: "chip",
         text: "you keep eating grass",
+        created_at: new Date() - 1000,
       },
     ],
-    created_at: new Date() - 1,
+    created_at: new Date() - 50000,
   },
 ];
 
@@ -58,7 +60,12 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("new connection - node");
-  io.emit("new connection", listQuestions);
+  io.emit(
+    "new connection",
+    listQuestions.sort((a, b) => {
+      return a.created_at - b.created_at;
+    })
+  );
 
   socket.on("add-question", (question) => {
     console.log("server - add question", question);
@@ -71,17 +78,28 @@ io.on("connection", (socket) => {
 
     listQuestions.push(newQuestion);
     console.log("questions", listQuestions);
-    socket.emit("add-question", newQuestion);
+    socket.emit("question-added", newQuestion);
   });
 
   socket.on("add-answer", (answerData) => {
-    const { answer, questionId } = answerData;
-    console.log("server - add question", questionid, answer);
+    console.log("answer data", answerData);
+    const { text, questionId: id, user } = answerData;
+    let updatedQuestion;
 
-    // find the question in the list
-    // add the answer to the list of
-    // listQuestions.push(newQuestion);
-    console.log("answered - questions", listQuestions);
-    socket.emit("add-answer", updatedQuestion);
+    for (let i = 0; i < listQuestions.length; i++) {
+      const question = listQuestions[i];
+      if (question.id === id) {
+        console.log("found ID", question.text);
+        question.answers.push({
+          user,
+          text,
+          created_at: Date.now(),
+        });
+        updatedQuestion = listQuestions[i];
+        console.log("updated Question", updatedQuestion);
+      }
+    }
+
+    socket.emit("added-answer", updatedQuestion);
   });
 });
