@@ -16,6 +16,12 @@ http.listen(3000, () => {
   console.log("listening on *:3000");
 });
 
+const cleanInput = (text) => {
+  console.log("clean input text", text);
+  return text.trim().split(" ").join("");
+};
+
+// init question list
 const listQuestions = [
   {
     id: randomUUID(),
@@ -28,6 +34,7 @@ const listQuestions = [
         created_at: new Date() - 10000,
       },
     ],
+    botAutoReply: false,
     created_at: new Date() - 10000,
   },
   {
@@ -41,9 +48,17 @@ const listQuestions = [
         created_at: new Date() - 1000,
       },
     ],
+    botAutoReply: false,
     created_at: new Date() - 50000,
   },
 ];
+
+// init question map
+const answerMap = listQuestions.reduce((acc, question) => {
+  const input = cleanInput(question.text);
+  acc[input] = question.answers[question.answers.length - 1];
+  return acc;
+}, {});
 
 const io = new Server(http, {
   cors: {
@@ -60,46 +75,68 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("new connection - node");
+  console.log("init question map", answerMap);
   io.emit(
     "new connection",
     listQuestions.sort((a, b) => {
       return a.created_at - b.created_at;
     })
   );
-
+  /**
+   * Add question
+   */
   socket.on("add-question", (question) => {
     console.log("server - add question", question);
+    const cleandQuestionInput = cleanInput(question.text);
     const newQuestion = {
       ...question,
       id: randomUUID(),
       answers: [],
+      botAnswered: false,
       created_at: new Date(),
     };
 
+    const lastAnswer = answerMap[cleandQuestionInput];
+    if (lastAnswer) {
+      console.log("answer found for repeat", lastAnswer);
+      newQuestion.answers.push(lastAnswer);
+      newQuestion.botAnswered = true;
+    }
+
+    console.log("question to be added", newQuestion);
     listQuestions.push(newQuestion);
     console.log("questions", listQuestions);
     socket.emit("question-added", newQuestion);
   });
 
+  /**
+   * Add answer
+   */
   socket.on("add-answer", (answerData) => {
-    console.log("answer data", answerData);
-    const { text, questionId: id, user } = answerData;
-    let updatedQuestion;
+    console.log("answer data input", answerData);
+    const { text: answerText, questionId: id, user, questionText } = answerData;
+    // update the answerMap with the latest answer
+    const cleanedQuestion = cleanInput(questionText);
+    answerMap[cleanedQuestion] = answerData;
+    console.log("add answer - updated answer map", answerMap);
 
+    let questionAnswered;
+
+    // update the question (w/ answers) in questionList
     for (let i = 0; i < listQuestions.length; i++) {
       const question = listQuestions[i];
       if (question.id === id) {
         console.log("found ID", question.text);
         question.answers.push({
           user,
-          text,
+          text: answerText,
           created_at: Date.now(),
         });
-        updatedQuestion = listQuestions[i];
-        console.log("updated Question", updatedQuestion);
+        questionAnswered = listQuestions[i];
+        console.log("updated Question", questionAnswered);
       }
     }
 
-    socket.emit("added-answer", updatedQuestion);
+    socket.emit("added-answer", questionAnswered);
   });
 });

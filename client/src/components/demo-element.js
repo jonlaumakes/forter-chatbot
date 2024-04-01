@@ -68,6 +68,7 @@ export class DemoElement extends LitElement {
         }
         return question;
       });
+      console.log("updated listQuestions", this.listQuestions);
     });
   }
 
@@ -93,9 +94,11 @@ export class DemoElement extends LitElement {
 
   addAnswer() {
     let answerText = this.answerInput.value;
+    console.log("UI add answer", this.questionToAnswer);
 
     const answer = {
       questionId: this.questionToAnswer.id || 10000,
+      questionText: this.questionToAnswer.text,
       user: this._username,
       text: answerText,
     };
@@ -119,12 +122,38 @@ export class DemoElement extends LitElement {
         ${listQuestions.map(
           (question, index) => html`
             <div>
-              <p>${question.text}</p>
+              <p>${`Question: ${question.text}`}</p>
               <p>${`Posted by: ${question.user} at ${question.created_at}`}</p>
               <div>
-                ${question.answers.map((answer) => {
-                  return html` <p>${answer.text}</p> `;
-                })}
+                ${question.botAnswered
+                  ? html`
+                      <div>
+                        <p>
+                          ${`This question was asked before and answered by ${
+                            question.answers[question.answers.length - 1].user
+                          }`}
+                        </p>
+                        <p>${question.answers[0].text}</p>
+                      </div>
+                    `
+                  : html`
+                      ${question.answers.map((answer) => {
+                        return html`
+                          <div>
+                            <p>${`Answered by: ${answer.user}`}</p>
+                            <p>${answer.text}}</p>
+                          </div>
+                        `;
+                      })}
+                    `}
+                <!-- ${question.answers.map((answer) => {
+                  return html`
+                    <div>
+                      <p>${`Answered by: ${answer.user}`}</p>
+                      <p>${answer.text}}</p>
+                    </div>
+                  `;
+                })} -->
               </div>
               <button
                 @click=${() => {
@@ -137,10 +166,6 @@ export class DemoElement extends LitElement {
           `
         )}
       </ul>
-    `;
-
-    const answerQuestionLabel = html`
-      <p>${questionToAnswer.text ?? "Select a question to answer!"}</p>
     `;
 
     return html`
