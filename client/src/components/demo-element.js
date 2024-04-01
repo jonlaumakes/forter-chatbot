@@ -25,13 +25,19 @@ export class DemoElement extends LitElement {
        * @type {string}
        */
       name: { type: String },
+
+      /**
+       * The target question.
+       * @type {Object}
+       */
+      questionToAnswer: { type: Object },
     };
   }
 
   constructor() {
     super();
     this._username = "Chip";
-    this.questionToAnswer;
+    this.questionToAnswer = {};
     this.listQuestions = [];
 
     this.socket = io("http://localhost:3000", {
@@ -44,14 +50,16 @@ export class DemoElement extends LitElement {
       this.listQuestions = questions;
       // init question
       // could refactor to the most popular if likes are added to questions
-      this.questionToAnswer = questions[0];
+      if (questions[0]) {
+        this.questionToAnswer = questions[0];
+      }
     });
 
     this.socket.on("add-question", (question) => {
       console.log("UI - new question", question);
       this.listQuestions = [...this.listQuestions, question];
     });
-    // socket for adding an answer
+    // todo: socket for adding an answer
   }
 
   static styles = [style];
@@ -85,29 +93,19 @@ export class DemoElement extends LitElement {
   }
 
   handleAnswerQuestionClick(question) {
-    console.log("handle answer question click", question.text);
+    console.log("handle answer question click", question);
     this.questionToAnswer = question;
-    console.log("updated question to answer", this.questionToAnswer.text);
+    console.log("updated question to answer", this.questionToAnswer);
   }
 
   render() {
     // const { name, count } = this;
-    let questionToAnswerLabel;
-
-    if (this.questionToAnswer) {
-      questionToAnswerLabel = this.questionToAnswer.text;
-    } else {
-      questionToAnswerLabel = "Select a question to answer!";
-    }
-
-    const questionsListEditable = this.listQuestions.map((question) => {
-      return { ...question, editMode: false };
-    });
+    let { questionToAnswer, listQuestions, handleAnswerQuestionClick } = this;
 
     const questions = html`
       <ul>
-        ${this.listQuestions.map(
-          (question) => html`
+        ${listQuestions.map(
+          (question, index) => html`
             <li>${question.text}</li>
             <li>${`Posted by: ${question.user} at ${question.created_at}`}</li>
             <button
@@ -115,12 +113,16 @@ export class DemoElement extends LitElement {
                 this.handleAnswerQuestionClick(question);
               }}
             >
-              Answer
+              Answer this question
             </button>
             <!-- add in mapping for array of answers -->
           `
         )}
       </ul>
+    `;
+
+    const answerQuestionLabel = html`
+      <p>${questionToAnswer.text ?? "Select a question to answer!"}</p>
     `;
 
     return html`
@@ -129,7 +131,7 @@ export class DemoElement extends LitElement {
       <input id="new-question" type="text" aria-label="New Question" />
       <button @click=${this.addQuestion}>Add a question</button>
       <div>
-        <p>${questionToAnswerLabel}</p>
+        <p>${questionToAnswer.text ?? "Select a question to answer!"}</p>
         <input id="question-answer" type="text" aria-label="New Answer" />
         <button @click=${this.addAnswer}>Submit</button>
       </div>
