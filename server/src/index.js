@@ -25,11 +25,11 @@ const cleanInput = (text) => {
 const listQuestions = [
   {
     id: randomUUID(),
-    user: "chip",
+    user: "Chip",
     text: "how do you center a div?",
     answers: [
       {
-        user: "otto",
+        user: "Otto",
         text: "read the docs!",
         created_at: new Date() - 10000,
       },
@@ -39,11 +39,11 @@ const listQuestions = [
   },
   {
     id: randomUUID(),
-    user: "otto",
+    user: "Otto",
     text: "why does does my stomach hurt?",
     answers: [
       {
-        user: "chip",
+        user: "Chip",
         text: "you keep eating grass",
         created_at: new Date() - 1000,
       },

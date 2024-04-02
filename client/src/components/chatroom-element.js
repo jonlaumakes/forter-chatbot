@@ -1,12 +1,13 @@
 import { LitElement, html } from "lit";
-import style from "./demo-element.css.js";
+import style from "./chatroom-element.css.js";
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 import "./chat/answer/answer-block.js";
+import "./chat/question/question-block.js";
 
 /**
  * An example element.
  */
-export class DemoElement extends LitElement {
+export class ChatRoomElement extends LitElement {
   static get properties() {
     return {
       /**
@@ -115,63 +116,85 @@ export class DemoElement extends LitElement {
   }
 
   render() {
-    // const { name, count } = this;
-    let { questionToAnswer, listQuestions } = this;
+    let { questionToAnswer, listQuestions, username } = this;
 
     const questions = html`
-      <ul>
-        ${listQuestions.map(
-          (question, index) => html`
-            <div>
-              <p>${`Question: ${question.text}`}</p>
-              <p>${`Posted by: ${question.user} at ${question.created_at}`}</p>
-              <div>
-                ${question.botAnswered
-                  ? html`
-                      <div>
-                        <p>
-                          ${`This question was asked before and answered by ${
-                            question.answers[question.answers.length - 1].user
-                          }`}
-                        </p>
-                        <p>${question.answers[0].text}</p>
-                      </div>
-                    `
-                  : html`
-                      ${question.answers.map((answer) => {
-                        return html`
-                          <div class="chat-container">
-                            <chat-answer .message=${answer}></chat-answer>
-                          </div>
-                        `;
-                      })}
-                    `}
+      <div>
+        <div class="scrollable-container">
+          ${listQuestions.map(
+            (question, index) => html`
+            <div class="question-group-container">
+              <div class="chat-question-container">
+                <chat-question
+                  .message=${question}
+                  .loggedInUser=${username}
+                ></chat-question>
               </div>
-              <button
-                @click=${() => {
-                  this.handleAnswerQuestionClick(question);
-                }}
-              >
-                Answer this question
-              </button>
+              <div>
+                ${
+                  question.botAnswered
+                    ? html`
+                        <div>
+                          <p>
+                            ${`This question was asked before and answered by ${
+                              question.answers[question.answers.length - 1].user
+                            }`}
+                          </p>
+                          <p>${question.answers[0].text}</p>
+                        </div>
+                      `
+                    : html`
+                        <div class="chat-answers-container">
+                          ${question.answers.map((answer) => {
+                            return html`
+                              <div class="chat-answer">
+                                <chat-answer
+                                  .message=${answer}
+                                  .loggedInUser=${username}
+                                ></chat-answer>
+                              </div>
+                            `;
+                          })}
+                          <div class="question-footer">
+                            <button
+                              class="add-answer-button"
+                              @click=${() => {
+                                this.handleAnswerQuestionClick(question);
+                              }}
+                            >
+                              Add your Answer
+                            </button>
+                          </div>
+                        </div>
+                      `
+                }
+              </div>
+              <div class="line-container">
+                <hr />
+              </div>
             </div>
+          </div>
           `
-        )}
-      </ul>
+          )}
+        </div>
+      </div>
     `;
 
     return html`
-      <div>Chatroom</div>
-      ${questions}
-      <input id="new-question" type="text" aria-label="New Question" />
-      <button @click=${this.addQuestion}>Add a question</button>
+      <h1>Forter Chatroom</h1>
+      <div class="chat-container">${questions}</div>
       <div>
-        <p>${questionToAnswer.text ?? "Select a question to answer!"}</p>
         <input id="new-answer" type="text" aria-label="New Answer" />
         <button @click=${this.addAnswer}>Submit</button>
+      </div>
+      <div class="question-input-container">
+        <input id="new-question" type="text" aria-label="New Question" />
+        <button class="question-submit-button" @click=${this.addQuestion}>
+          Add a question
+        </button>
       </div>
     `;
   }
 }
 
-window.customElements.define("demo-element", DemoElement);
+window.customElements.define("chatroom-element", ChatRoomElement);
