@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 import style from "./demo-element.css.js";
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
+import "./chat/answer/answer-block.js";
 
 /**
  * An example element.
@@ -139,21 +140,12 @@ export class DemoElement extends LitElement {
                   : html`
                       ${question.answers.map((answer) => {
                         return html`
-                          <div>
-                            <p>${`Answered by: ${answer.user}`}</p>
-                            <p>${answer.text}}</p>
+                          <div class="chat-container">
+                            <chat-answer .message=${answer}></chat-answer>
                           </div>
                         `;
                       })}
                     `}
-                <!-- ${question.answers.map((answer) => {
-                  return html`
-                    <div>
-                      <p>${`Answered by: ${answer.user}`}</p>
-                      <p>${answer.text}}</p>
-                    </div>
-                  `;
-                })} -->
               </div>
               <button
                 @click=${() => {
