@@ -38,7 +38,7 @@ export class ChatRoomElement extends LitElement {
 
   constructor() {
     super();
-    this._username = "Chip";
+    this.username = "Chip";
     this.questionToAnswer = {};
     this.listQuestions = [];
 
@@ -86,7 +86,7 @@ export class ChatRoomElement extends LitElement {
 
   addQuestion() {
     const question = {
-      user: this._username,
+      user: this.username,
       text: this.questionInput.value,
     };
 
@@ -103,7 +103,7 @@ export class ChatRoomElement extends LitElement {
     const answer = {
       questionId: this.questionToAnswer.id || 10000,
       questionText: this.questionToAnswer.text,
-      user: this._username,
+      user: this.username,
       text: answerText,
     };
     console.log("add answer submit click", answer);
