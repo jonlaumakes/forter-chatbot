@@ -31,6 +31,7 @@ export const questionComponentStyles = css`
     font-family: Helvetica, Arial, sans-serif;
     color: #dedede;
     font-weight: bold;
+    margin-right: 0.5em;
     margin-right: 5px;
     margin-left: 0.7em;
     font-size: 1.3em;
@@ -38,9 +39,8 @@ export const questionComponentStyles = css`
 
   .timestamp {
     font-family: Helvetica, Arial, sans-serif;
-    color: #b7b7c7;
     font-size: 0.87em;
-    color: #666;
+    color: #667;
   }
 
   .message-text {

@@ -17,7 +17,6 @@ http.listen(3000, () => {
 });
 
 const cleanInput = (text) => {
-  console.log("clean input text", text);
   return text.trim().split(" ").join("");
 };
 
@@ -33,6 +32,11 @@ const listQuestions = [
         text: "read the docs!",
         created_at: new Date() - 1000,
       },
+      {
+        user: "Kylo",
+        text: "If he wanted to read docs, he wouldn't be on here.  Try using a flex container!!",
+        created_at: new Date() - 1000,
+      },
     ],
     botAnswered: false,
     created_at: new Date() - 2000,
@@ -44,7 +48,7 @@ const listQuestions = [
     answers: [
       {
         user: "Chip",
-        text: "you keep eating grass",
+        text: "you keep eating grass at the park",
         created_at: new Date() - 61000,
       },
     ],
@@ -74,8 +78,6 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("new connection - node");
-  console.log("init question map", answerMap);
   io.emit(
     "new connection",
     listQuestions.sort((a, b) => {
@@ -86,7 +88,6 @@ io.on("connection", (socket) => {
    * Add question
    */
   socket.on("add-question", (question) => {
-    console.log("server - add question", question);
     const cleandQuestionInput = cleanInput(question.text);
     const newQuestion = {
       ...question,
@@ -98,14 +99,11 @@ io.on("connection", (socket) => {
 
     const lastAnswer = answerMap[cleandQuestionInput];
     if (lastAnswer) {
-      console.log("answer found for repeat", lastAnswer);
       newQuestion.answers.push(lastAnswer);
       newQuestion.botAnswered = true;
     }
 
-    console.log("question to be added", newQuestion);
     listQuestions.push(newQuestion);
-    console.log("questions", listQuestions);
     socket.emit("question-added", newQuestion);
   });
 
@@ -113,7 +111,6 @@ io.on("connection", (socket) => {
    * Add answer
    */
   socket.on("add-answer", (answerData) => {
-    console.log("answer data input", answerData);
     const { text: answerText, questionId: id, user, questionText } = answerData;
     // update the answerMap with the latest answer
     const cleanedQuestion = cleanInput(questionText);
@@ -126,14 +123,12 @@ io.on("connection", (socket) => {
     for (let i = 0; i < listQuestions.length; i++) {
       const question = listQuestions[i];
       if (question.id === id) {
-        console.log("found ID", question.text);
         question.answers.push({
           user,
           text: answerText,
           created_at: new Date(),
         });
         questionAnswered = listQuestions[i];
-        console.log("updated Question", questionAnswered);
       }
     }
 

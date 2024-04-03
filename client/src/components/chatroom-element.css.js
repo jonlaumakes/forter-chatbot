@@ -13,6 +13,7 @@ export default css`
     padding-top: 0;
     border-top: 0;
   }
+
   .page-header {
     display: flex;
     justify-content: start;
@@ -35,11 +36,11 @@ export default css`
   .chats-container {
     display: flex;
     flex-direction: column;
-    width: 90vw;
+    width: 85vw;
     min-height: 80vh;
     max-height: 80vh;
     overflow-y: auto;
-    padding: 10px;
+    padding: 3em;
   }
   .question-input-container {
     display: flex;
@@ -107,10 +108,11 @@ export default css`
     display: flex;
     align-items: center;
     padding: 8px 16px;
-    border: none;
-    background-color: #0079d3;
+    border: solid 2px #cdcdcd;
+    background-color: transparent;
+    background-repeat: no-repeat;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 1em;
     font-weight: bold;
     cursor: pointer;
     border-radius: 4px;
@@ -130,7 +132,9 @@ export default css`
     padding: 1em;
     width: 80%;
     height: 5em;
-    border: 2px solid #ccc;
+    border: solid 2px #cdcdcd;
+    background-color: transparent;
+    background-repeat: no-repeat;
     border-radius: 2px;
     resize: vertical;
     margin-bottom: 0.2em;
@@ -140,8 +144,9 @@ export default css`
     display: flex;
     align-items: center;
     padding: 8px 16px;
-    border: none;
-    background-color: #0079d3;
+    border: solid 2px #cdcdcd;
+    background-color: transparent;
+    background-repeat: no-repeat;
     color: #ffffff;
     font-size: 1em;
     font-weight: bold;

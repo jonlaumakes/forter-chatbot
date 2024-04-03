@@ -32,7 +32,7 @@ export const answerComponentStyles = css`
     font-family: Helvetica, Arial, sans-serif;
     color: #dedede;
     font-weight: bold;
-    margin-right: 5px;
+    margin-right: 0.5em;
     margin-left: 0.7em;
     font-size: 1.3em;
   }
@@ -40,7 +40,7 @@ export const answerComponentStyles = css`
   .timestamp {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 0.87em;
-    color: #9393a5;
+    color: #667;
   }
 
   .message-text {
