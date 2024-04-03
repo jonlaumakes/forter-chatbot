@@ -49,12 +49,12 @@ export default css`
     bottom: 0;
     left: 0;
     right: 0;
-    margin-bottom: 1em;
     border-top: 1px solid #ddd;
     padding: 1em;
     display: flex;
     align-items: center;
     box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
 
     input[type="text"] {
       font-size: 1em;
