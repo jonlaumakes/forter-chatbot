@@ -31,11 +31,11 @@ const listQuestions = [
       {
         user: "Otto",
         text: "read the docs!",
-        created_at: new Date() - 10000,
+        created_at: new Date() - 1000,
       },
     ],
     botAutoReply: false,
-    created_at: new Date() - 10000,
+    created_at: new Date() - 2000,
   },
   {
     id: randomUUID(),
@@ -45,11 +45,11 @@ const listQuestions = [
       {
         user: "Chip",
         text: "you keep eating grass",
-        created_at: new Date() - 1000,
+        created_at: new Date() - 61000,
       },
     ],
     botAutoReply: false,
-    created_at: new Date() - 50000,
+    created_at: new Date() - 60000,
   },
 ];
 
@@ -130,7 +130,7 @@ io.on("connection", (socket) => {
         question.answers.push({
           user,
           text: answerText,
-          created_at: Date.now(),
+          created_at: new Date(),
         });
         questionAnswered = listQuestions[i];
         console.log("updated Question", questionAnswered);

@@ -31,16 +31,19 @@ export default css`
     box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1); /* Added box shadow */
 
     input[type="text"] {
+      font-size: 1em;
       flex: 1;
       max-width: calc(0.68 * 100vw);
-      height: 2em;
-      padding: 8px;
+      height: 2.6em;
+      padding: 0.2em;
+      padding-left: 2em;
       border-radius: 20px; /* Increased border-radius for rounded corners */
       border: 1px solid #ccc;
       margin-right: 0.5em;
       outline: none; /* Remove outline on focus */
     }
     button {
+      font-size: 1.25em;
       padding: 8px 16px;
       border-radius: 20px; /* Increased border-radius for rounded corners */
       background-color: #8a8f94;

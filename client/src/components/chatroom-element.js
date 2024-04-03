@@ -110,7 +110,8 @@ export class ChatRoomElement extends LitElement {
   }
 
   handleAnswerQuestionClick(question) {
-    console.log("handle answer question click", question);
+    console.log("previous question to answer id", this.questionToAnswer.id);
+    console.log("selected question id", question.id);
     this.questionToAnswer = question;
     console.log("updated question to answer", this.questionToAnswer);
   }
@@ -156,14 +157,28 @@ export class ChatRoomElement extends LitElement {
                             `;
                           })}
                           <div class="question-footer">
-                            <button
-                              class="add-answer-button"
-                              @click=${() => {
-                                this.handleAnswerQuestionClick(question);
-                              }}
-                            >
-                              Add your Answer
-                            </button>
+                            ${question.id === questionToAnswer.id
+                              ? html`
+                                  <div class="answer-question-container">
+                                    <textarea id="new-answer"></textarea>
+                                    <button
+                                      class="add-answer-button"
+                                      @click=${this.addAnswer}
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
+                                `
+                              : html`
+                                  <button
+                                    class="add-answer-button"
+                                    @click=${() => {
+                                      this.handleAnswerQuestionClick(question);
+                                    }}
+                                  >
+                                    Add your Answer
+                                  </button>
+                                `}
                           </div>
                         </div>
                       `
@@ -184,13 +199,19 @@ export class ChatRoomElement extends LitElement {
       <h1>Forter Chatroom</h1>
       <div class="chat-container">${questions}</div>
       <div>
-        <input id="new-answer" type="text" aria-label="New Answer" />
-        <button @click=${this.addAnswer}>Submit</button>
+        <!-- <p>${questionToAnswer.text}</p> -->
+        <!-- <input id="new-answer" type="text" aria-label="New Answer" /> -->
+        <!-- <button @click=${this.addAnswer}>Submit</button> -->
       </div>
       <div class="question-input-container">
-        <input id="new-question" type="text" aria-label="New Question" />
+        <input
+          class="question-input"
+          id="new-question"
+          type="text"
+          aria-label="New Question"
+        />
         <button class="question-submit-button" @click=${this.addQuestion}>
-          Add a question
+          Ask
         </button>
       </div>
     `;

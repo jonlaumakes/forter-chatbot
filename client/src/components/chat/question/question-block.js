@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { questionComponentStyles } from "./question-block.css.js";
+import { getTimeAgo } from "../util/time-util.js";
 
 export class QuestionComponent extends LitElement {
   constructor() {
@@ -13,9 +14,7 @@ export class QuestionComponent extends LitElement {
   };
 
   render() {
-    // const isUser =
-    //   this.message.user.toLowerCase() === this.message.loggedInUser;
-    // const iconClass = isUser ? "fas fa-user" : "far fa-user";
+    const timeAgo = getTimeAgo(this.message.created_at);
 
     return html`
       <div class="message-container">
@@ -36,7 +35,7 @@ export class QuestionComponent extends LitElement {
           </div>
           <div class="user-info">
             <span class="username">${this.message.user}</span>
-            <span class="timestamp">${this.message.created_at}</span>
+            <span class="timestamp">${timeAgo}</span>
           </div>
         </div>
         <p class="message-text">${this.message.text}</p>
