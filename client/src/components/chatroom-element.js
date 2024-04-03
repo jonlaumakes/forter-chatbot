@@ -66,7 +66,6 @@ export class ChatRoomElement extends LitElement {
         }
         return question;
       });
-      console.log("updated listQuestions", this.listQuestions);
     });
   }
 
@@ -81,9 +80,15 @@ export class ChatRoomElement extends LitElement {
   }
 
   handleQuestionInputChange(e) {
-    console.log("input updated", e.key);
     if (e.key === "Enter") {
       this.addQuestion();
+    }
+    return;
+  }
+
+  handleAnswerInputChange(e) {
+    if (e.key === "Enter") {
+      this.addAnswer();
     }
     return;
   }
@@ -102,7 +107,6 @@ export class ChatRoomElement extends LitElement {
     let answerText = this.answerInput.value;
 
     if (!answerText.length) return;
-    console.log("UI add answer", this.questionToAnswer);
 
     const answer = {
       questionId: this.questionToAnswer.id || 10000,
@@ -110,16 +114,13 @@ export class ChatRoomElement extends LitElement {
       user: this.username,
       text: answerText,
     };
-    console.log("add answer submit click", answer);
+
     this.socket.emit("add-answer", answer);
     this.answerInput.value = "";
   }
 
   handleAnswerQuestionClick(question) {
-    console.log("previous question to answer id", this.questionToAnswer.id);
-    console.log("selected question id", question.id);
     this.questionToAnswer = question;
-    console.log("updated question to answer", this.questionToAnswer);
   }
 
   render() {
@@ -175,6 +176,7 @@ export class ChatRoomElement extends LitElement {
                                       placeholder="What are your thoughts?"
                                       id="new-answer-input"
                                       class="answer-reply-input"
+                                      @keydown=${this.handleAnswerInputChange}
                                     ></textarea>
                                   </div>
                                   <div class="answer-question-container">
