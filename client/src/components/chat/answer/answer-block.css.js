@@ -1,8 +1,11 @@
 import { css } from "lit";
 
 export const answerComponentStyles = css`
+  p {
+    font-family: Helvetica, Arial, sans-serif;
+  }
   .message-container {
-    background-color: #cdcdcd;
+    /* background-color: #e4e4e4; */
     padding: 0.5em;
     padding-left: 1.3em;
     border-radius: 5px;
@@ -26,17 +29,23 @@ export const answerComponentStyles = css`
   }
 
   .username {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #dedede;
     font-weight: bold;
     margin-right: 5px;
     margin-left: 0.7em;
+    font-size: 1.3em;
   }
 
   .timestamp {
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 0.87em;
-    color: #666;
+    color: #9393a5;
   }
 
   .message-text {
+    color: #dedede;
+    font-size: 1em;
     margin-top: 0.4em;
     margin-left: 3em;
     margin-bottom: 0.3em;
@@ -55,7 +64,7 @@ export const answerComponentStyles = css`
   }
 
   .upvote-icon {
-    background-color: #8a8f94;
+    /* background-color: #8a8f94; */
     color: #fff;
     border: none;
     border-radius: 3px;

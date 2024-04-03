@@ -167,9 +167,15 @@ export class ChatRoomElement extends LitElement {
                             ${question.id === questionToAnswer.id
                               ? html`
                                   <div class="answer-question-container">
-                                    <textarea id="new-answer"></textarea>
+                                    <textarea
+                                      placeholder="What are your thoughts?"
+                                      id="new-answer-input"
+                                      class="answer-reply-input"
+                                    ></textarea>
+                                  </div>
+                                  <div class="answer-question-container">
                                     <button
-                                      class="add-answer-button"
+                                      class="reply-button"
                                       @click=${this.addAnswer}
                                     >
                                       Reply
@@ -183,7 +189,7 @@ export class ChatRoomElement extends LitElement {
                                       this.handleAnswerQuestionClick(question);
                                     }}
                                   >
-                                    Add your Answer
+                                    Add an answer
                                   </button>
                                 `}
                           </div>
@@ -203,9 +209,14 @@ export class ChatRoomElement extends LitElement {
     `;
 
     return html`
-      <h1>Forter Chatroom</h1>
-      <div class="chat-container">${questions}</div>
-      <div></div>
+      <div class="page-header">
+        <div class="title-container">
+          <div class="title">#forter-chatroom</div>
+        </div>
+      </div>
+      <div class="conversation-container">
+        <div class="chats-container">${questions}</div>
+      </div>
       <div class="question-input-container">
         <input
           class="question-input"

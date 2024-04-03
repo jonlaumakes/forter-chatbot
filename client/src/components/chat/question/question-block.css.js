@@ -1,8 +1,11 @@
 import { css } from "lit";
 
 export const questionComponentStyles = css`
+  p {
+    font-family: Helvetica, Arial, sans-serif;
+  }
   .message-container {
-    background-color: #f0f0f0;
+    /* background-color: #f0f0f0; */
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
@@ -25,18 +28,26 @@ export const questionComponentStyles = css`
   }
 
   .username {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #dedede;
     font-weight: bold;
     margin-right: 5px;
     margin-left: 0.7em;
+    font-size: 1.3em;
   }
 
   .timestamp {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #b7b7c7;
     font-size: 0.87em;
     color: #666;
   }
 
   .message-text {
-    margin-bottom: 10px;
+    color: #dedede;
+    margin-top: 0.4em;
+    margin-left: 3em;
+    margin-bottom: 0.3em;
   }
 
   .footer {

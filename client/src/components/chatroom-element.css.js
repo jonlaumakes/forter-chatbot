@@ -2,33 +2,61 @@ import { css } from "lit";
 
 export default css`
   :host {
-    display: block;
-    border: solid 1px gray;
-    padding: 16px;
+    background: radial-gradient(#393939, #000000);
+    padding-left: 16px;
+    padding-right: 16px;
     max-width: 1800px;
   }
-  .chat-container {
+
+  body {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .page-header {
+    display: flex;
+    justify-content: start;
+    border-bottom: 2px solid rgba(128, 128, 128, 0.5);
+    margin-bottom: 2em;
+    .title-container {
+      margin-left: 1em;
+      border-right: 2px solid rgba(128, 128, 128, 0.5);
+      .title {
+        font-size: 3em;
+        padding-right: 0.5em;
+      }
+    }
+  }
+  .conversation-container {
+    display: flex;
+    justify-content: center;
+    max-width: 1800px;
+  }
+  .chats-container {
+    background: radial-gradient(#393939, #000000);
     display: flex;
     flex-direction: column;
+    width: 90vw;
+    min-height: 80vh;
     max-height: 80vh;
     overflow-y: auto;
     padding: 10px;
     background-color: #fff;
-    border-radius: 8px;
   }
   .question-input-container {
     display: flex;
-    position: fixed; /* Changed to fixed */
+    justify-content: center;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     margin-bottom: 1em;
     background-color: #fff;
-    border-top: 1px solid #ddd; /* Added border top */
-    padding: 10px;
+    border-top: 1px solid #ddd;
+    padding: 1em;
     display: flex;
     align-items: center;
-    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1); /* Added box shadow */
+    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
 
     input[type="text"] {
       font-size: 1em;
@@ -63,19 +91,19 @@ export default css`
   }
 
   .chat-question-container {
-    max-width: 70%;
-    align-self: flex-start; /* Align questions to the left */
-    background-color: #f0f0f0;
+    max-width: 95%;
+    align-self: flex-start;
+    /* background-color: #f0f0f0; */
     margin-bottom: 0.2empx;
   }
 
   .chat-answers-container {
-    max-width: 66%;
+    max-width: 91%;
     margin-left: 4%;
-    align-self: flex-start; /* Align questions to the left */
+    align-self: flex-start;
   }
   .chat-answer {
-    background-color: #f0f0f0;
+    /* background-color: #f0f0f0; */
   }
 
   .add-answer-button {
@@ -94,5 +122,34 @@ export default css`
 
   .question-footer {
     margin-bottom: 1em;
+  }
+
+  .answer-question-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .answer-reply-input {
+    padding: 1em;
+    width: 80%;
+    height: 5em;
+    border: 2px solid #ccc;
+    border-radius: 2px;
+    resize: vertical;
+    margin-bottom: 0.2em;
+    background-color: #d0d4e1;
+  }
+  .reply-button {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border: none;
+    background-color: #0079d3;
+    color: #ffffff;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
   }
 `;
