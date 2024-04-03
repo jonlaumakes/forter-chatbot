@@ -96,6 +96,8 @@ export class ChatRoomElement extends LitElement {
 
   addAnswer() {
     let answerText = this.answerInput.value;
+
+    if (!answerText.length) return;
     console.log("UI add answer", this.questionToAnswer);
 
     const answer = {
@@ -135,13 +137,17 @@ export class ChatRoomElement extends LitElement {
                 ${
                   question.botAnswered
                     ? html`
-                        <div>
-                          <p>
-                            ${`This question was asked before and answered by ${
-                              question.answers[question.answers.length - 1].user
-                            }`}
-                          </p>
-                          <p>${question.answers[0].text}</p>
+                        <div class="chat-answers-container">
+                          <div class="chat-answer">
+                            <chat-answer
+                              .message=${
+                                question.answers[question.answers.length - 1]
+                              }
+                              .loggedInUser=${username}
+                              .botAnswered=${question.botAnswered}
+                            ></chat-answer>
+                            </div>
+                          </div>
                         </div>
                       `
                     : html`
@@ -152,6 +158,7 @@ export class ChatRoomElement extends LitElement {
                                 <chat-answer
                                   .message=${answer}
                                   .loggedInUser=${username}
+                                  .botAnswered=${question.botAnswered}
                                 ></chat-answer>
                               </div>
                             `;
@@ -198,11 +205,7 @@ export class ChatRoomElement extends LitElement {
     return html`
       <h1>Forter Chatroom</h1>
       <div class="chat-container">${questions}</div>
-      <div>
-        <!-- <p>${questionToAnswer.text}</p> -->
-        <!-- <input id="new-answer" type="text" aria-label="New Answer" /> -->
-        <!-- <button @click=${this.addAnswer}>Submit</button> -->
-      </div>
+      <div></div>
       <div class="question-input-container">
         <input
           class="question-input"

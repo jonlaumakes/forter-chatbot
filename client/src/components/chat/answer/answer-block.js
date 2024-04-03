@@ -11,9 +11,11 @@ export class AnswerComponent extends LitElement {
   static properties = {
     message: { type: Object },
     loggedInuser: { type: String },
+    botAnswered: { type: Boolean },
   };
 
   render() {
+    const { message, botAnswered } = this;
     const timeAgo = getTimeAgo(this.message.created_at);
 
     return html`
@@ -34,11 +36,20 @@ export class AnswerComponent extends LitElement {
             </svg>
           </div>
           <div class="user-info">
-            <span class="username">${this.message.user}</span>
+            <span class="username"
+              >${botAnswered ? "Chatroom Bot" : message.user}</span
+            >
             <span class="timestamp">${timeAgo}</span>
           </div>
         </div>
-        <p class="message-text">${this.message.text}</p>
+        <p class="message-text">
+          ${botAnswered
+            ? `This questions was answered before by ${this.message.user}:`
+            : this.message.text}
+        </p>
+        ${botAnswered
+          ? html` <p class="bot-message-text">${this.message.text}</p> `
+          : null}
       </div>
     `;
   }

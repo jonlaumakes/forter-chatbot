@@ -31,6 +31,7 @@ export const questionComponentStyles = css`
   }
 
   .timestamp {
+    font-size: 0.87em;
     color: #666;
   }
 

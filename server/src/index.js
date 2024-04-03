@@ -34,7 +34,7 @@ const listQuestions = [
         created_at: new Date() - 1000,
       },
     ],
-    botAutoReply: false,
+    botAnswered: false,
     created_at: new Date() - 2000,
   },
   {
@@ -48,7 +48,7 @@ const listQuestions = [
         created_at: new Date() - 61000,
       },
     ],
-    botAutoReply: false,
+    botAnswered: false,
     created_at: new Date() - 60000,
   },
 ];

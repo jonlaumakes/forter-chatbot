@@ -3,9 +3,10 @@ import { css } from "lit";
 export const answerComponentStyles = css`
   .message-container {
     background-color: #cdcdcd;
-    padding: 10px;
+    padding: 0.5em;
+    padding-left: 1.3em;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 0.5em;
   }
 
   .header {
@@ -31,11 +32,21 @@ export const answerComponentStyles = css`
   }
 
   .timestamp {
+    font-size: 0.87em;
     color: #666;
   }
 
   .message-text {
-    margin-bottom: 10px;
+    margin-top: 0.4em;
+    margin-left: 3em;
+    margin-bottom: 0.3em;
+  }
+
+  .bot-message-text {
+    margin-top: 0.4em;
+    margin-left: 3em;
+    margin-bottom: 0.3em;
+    font-weight: bold;
   }
 
   .footer {
