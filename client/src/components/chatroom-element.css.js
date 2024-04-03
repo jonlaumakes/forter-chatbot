@@ -33,7 +33,6 @@ export default css`
     max-width: 1800px;
   }
   .chats-container {
-    background: radial-gradient(#393939, #000000);
     display: flex;
     flex-direction: column;
     width: 90vw;
@@ -41,7 +40,6 @@ export default css`
     max-height: 80vh;
     overflow-y: auto;
     padding: 10px;
-    background-color: #fff;
   }
   .question-input-container {
     display: flex;
@@ -51,7 +49,6 @@ export default css`
     left: 0;
     right: 0;
     margin-bottom: 1em;
-    background-color: #fff;
     border-top: 1px solid #ddd;
     padding: 1em;
     display: flex;

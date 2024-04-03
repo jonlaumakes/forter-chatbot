@@ -48,9 +48,7 @@ export class ChatRoomElement extends LitElement {
       },
     });
     this.socket.on("new connection", (questions) => {
-      console.log("init - questions", questions);
       this.listQuestions = questions;
-      // init question
       // could refactor to the most popular if likes are added to questions
       if (questions[0]) {
         this.questionToAnswer = questions[0];
@@ -58,12 +56,10 @@ export class ChatRoomElement extends LitElement {
     });
 
     this.socket.on("question-added", (question) => {
-      console.log("updated question added", question);
       this.listQuestions = [...this.listQuestions, question];
     });
 
     this.socket.on("added-answer", (updatedQuestion) => {
-      console.log("updated question from an answer sub", updatedQuestion);
       this.listQuestions = this.listQuestions.map((question) => {
         if (question.id === updatedQuestion.id) {
           return updatedQuestion;
@@ -81,7 +77,15 @@ export class ChatRoomElement extends LitElement {
   }
 
   get answerInput() {
-    return this.renderRoot?.querySelector("#new-answer") ?? null;
+    return this.renderRoot?.querySelector("#new-answer-input") ?? null;
+  }
+
+  handleQuestionInputChange(e) {
+    console.log("input updated", e.key);
+    if (e.key === "Enter") {
+      this.addQuestion();
+    }
+    return;
   }
 
   addQuestion() {
@@ -223,6 +227,7 @@ export class ChatRoomElement extends LitElement {
           id="new-question"
           type="text"
           aria-label="New Question"
+          @keydown=${this.handleQuestionInputChange}
         />
         <button class="question-submit-button" @click=${this.addQuestion}>
           Ask

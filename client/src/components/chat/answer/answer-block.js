@@ -94,12 +94,14 @@ export class AnswerComponent extends LitElement {
             <span class="username"
               >${botAnswered ? "Chatroom Bot" : message.user}</span
             >
-            <span class="timestamp">${timeAgo}</span>
+            ${!botAnswered
+              ? html`<span class="timestamp">${timeAgo}</span>`
+              : null}
           </div>
         </div>
         <p class="message-text">
           ${botAnswered
-            ? `This questions was answered before by ${this.message.user}:`
+            ? `This questions was answered before by ${this.message.user} ${timeAgo}:`
             : this.message.text}
         </p>
         ${botAnswered
