@@ -49,9 +49,7 @@ export class ChatRoomElement extends LitElement {
     });
     this.socket.on("A new user connected", (user, questions) => {
       this.user = user;
-      console.log("CLINET - user assigned", this.user);
       this.listQuestions = questions;
-      console.log("init questions", this.listQuestions);
     });
 
     this.socket.on("question-added", (question) => {
@@ -98,8 +96,7 @@ export class ChatRoomElement extends LitElement {
       username: this.user.username,
       text: this.questionInput.value,
     };
-    console.log("CLIENT - new question", newQuestion);
-    console.log("CLIENT - new question", newQuestion);
+
     this.socket.emit("add-question", newQuestion);
     this.questionInput.value = "";
   }
@@ -116,7 +113,6 @@ export class ChatRoomElement extends LitElement {
       userId: this.user.userId,
       text: answerText,
     };
-    console.log("add answer", answer);
 
     this.socket.emit("add-answer", answer);
     this.answerInput.value = "";

@@ -100,7 +100,6 @@ const createNewUser = () => {
 io.on("connection", (socket) => {
   const user = users.pop() || createNewUser();
   console.log("SERVER - new connection", user);
-  console.log("SERVER - remaining users", users);
   socket.emit(
     "A new user connected",
     user,
@@ -113,7 +112,6 @@ io.on("connection", (socket) => {
    * Add question
    */
   socket.on("add-question", (question) => {
-    console.log("SERVER add-question", question);
     const cleandQuestionInput = cleanInput(question.text);
     const newQuestion = {
       userId: question.userId,
@@ -142,8 +140,6 @@ io.on("connection", (socket) => {
    * Add answer
    */
   socket.on("add-answer", (answer) => {
-    console.log("SERVER - add-answer", answer);
-
     // update the answerMap with the latest answer
     const cleanedQuestion = cleanInput(answer.questionText);
     answerMap[cleanedQuestion] = answer;
