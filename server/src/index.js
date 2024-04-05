@@ -64,6 +64,7 @@ const answerMap = listQuestions.reduce((acc, question) => {
   return acc;
 }, {});
 
+// socket server
 const io = new Server(http, {
   cors: {
     origin: "*",
@@ -79,7 +80,7 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   io.emit(
-    "new connection",
+    "A new user connected",
     listQuestions.sort((a, b) => {
       return a.created_at - b.created_at;
     })
@@ -97,14 +98,17 @@ io.on("connection", (socket) => {
       created_at: new Date(),
     };
 
+    // handle a duplicate question
+    // retrieve answer from answerMap
     const lastAnswer = answerMap[cleandQuestionInput];
     if (lastAnswer) {
       newQuestion.answers.push(lastAnswer);
       newQuestion.botAnswered = true;
     }
 
+    // add question to questionList
     listQuestions.push(newQuestion);
-    socket.emit("question-added", newQuestion);
+    io.emit("question-added", newQuestion);
   });
 
   /**
@@ -112,14 +116,13 @@ io.on("connection", (socket) => {
    */
   socket.on("add-answer", (answerData) => {
     const { text: answerText, questionId: id, user, questionText } = answerData;
+
     // update the answerMap with the latest answer
     const cleanedQuestion = cleanInput(questionText);
     answerMap[cleanedQuestion] = answerData;
-    console.log("add answer - updated answer map", answerMap);
 
+    // update the question (with answers) in questionList
     let questionAnswered;
-
-    // update the question (w/ answers) in questionList
     for (let i = 0; i < listQuestions.length; i++) {
       const question = listQuestions[i];
       if (question.id === id) {
@@ -132,6 +135,6 @@ io.on("connection", (socket) => {
       }
     }
 
-    socket.emit("added-answer", questionAnswered);
+    io.emit("added-answer", questionAnswered);
   });
 });

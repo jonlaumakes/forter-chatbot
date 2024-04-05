@@ -47,7 +47,7 @@ export class ChatRoomElement extends LitElement {
         "Access-Control-Allow-Origin": "*",
       },
     });
-    this.socket.on("new connection", (questions) => {
+    this.socket.on("A new user connected", (questions) => {
       this.listQuestions = questions;
       // could refactor to the most popular if likes are added to questions
       if (questions[0]) {
