@@ -10,7 +10,7 @@ export class QuestionComponent extends LitElement {
 
   static properties = {
     message: { type: Object },
-    loggedInuser: { type: String },
+    loggedInuser: { type: Object },
   };
 
   render() {
@@ -60,8 +60,7 @@ export class QuestionComponent extends LitElement {
     `;
 
     function getIcon() {
-      console.log("question block", message, loggedInUser);
-      if (message.user === loggedInUser) {
+      if (message.userId === loggedInUser.userId) {
         return userIcon;
       }
       return otherUserIcon;
@@ -72,7 +71,7 @@ export class QuestionComponent extends LitElement {
         <div class="header">
           <div class="icon-container">${getIcon()}</div>
           <div class="user-info">
-            <span class="username">${message.user}</span>
+            <span class="username">${message.username}</span>
             <span class="timestamp">${timeAgo}</span>
           </div>
         </div>

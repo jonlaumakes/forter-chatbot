@@ -10,7 +10,7 @@ export class AnswerComponent extends LitElement {
 
   static properties = {
     message: { type: Object },
-    loggedInUser: { type: String },
+    loggedInUser: { type: Object },
     botAnswered: { type: Boolean },
   };
 
@@ -76,11 +76,10 @@ export class AnswerComponent extends LitElement {
     `;
 
     function getIcon() {
-      console.log("answer block", message, loggedInUser, botAnswered);
       if (botAnswered) {
         return robotIcon;
       }
-      if (message.user === loggedInUser) {
+      if (message.userId === loggedInUser.userId) {
         return userIcon;
       }
       return otherUserIcon;
@@ -92,7 +91,7 @@ export class AnswerComponent extends LitElement {
           <div class="icon-container">${getIcon()}</div>
           <div class="user-info">
             <span class="username"
-              >${botAnswered ? "Chatroom Bot" : message.user}</span
+              >${botAnswered ? "Chatroom Bot" : message.username}</span
             >
             ${!botAnswered
               ? html`<span class="timestamp">${timeAgo}</span>`
@@ -101,7 +100,7 @@ export class AnswerComponent extends LitElement {
         </div>
         <p class="message-text">
           ${botAnswered
-            ? `This questions was answered before by ${this.message.user} ${timeAgo}:`
+            ? `This questions was answered before by ${this.message.username} ${timeAgo}:`
             : this.message.text}
         </p>
         ${botAnswered

@@ -38,8 +38,8 @@ export class ChatRoomElement extends LitElement {
 
   constructor() {
     super();
-    this.username = "Chip";
-    this.questionToAnswer = {};
+    this.user = { username: "", userId: null };
+    this.questionToAnswer = null;
     this.listQuestions = [];
 
     this.socket = io("http://localhost:3000", {
@@ -47,12 +47,11 @@ export class ChatRoomElement extends LitElement {
         "Access-Control-Allow-Origin": "*",
       },
     });
-    this.socket.on("A new user connected", (questions) => {
+    this.socket.on("A new user connected", (user, questions) => {
+      this.user = user;
+      console.log("CLINET - user assigned", this.user);
       this.listQuestions = questions;
-      // could refactor to the most popular if likes are added to questions
-      if (questions[0]) {
-        this.questionToAnswer = questions[0];
-      }
+      console.log("init questions", this.listQuestions);
     });
 
     this.socket.on("question-added", (question) => {
@@ -94,12 +93,14 @@ export class ChatRoomElement extends LitElement {
   }
 
   addQuestion() {
-    const question = {
-      user: this.username,
+    const newQuestion = {
+      userId: this.user.userId,
+      username: this.user.username,
       text: this.questionInput.value,
     };
-
-    this.socket.emit("add-question", question);
+    console.log("CLIENT - new question", newQuestion);
+    console.log("CLIENT - new question", newQuestion);
+    this.socket.emit("add-question", newQuestion);
     this.questionInput.value = "";
   }
 
@@ -109,22 +110,24 @@ export class ChatRoomElement extends LitElement {
     if (!answerText.length) return;
 
     const answer = {
-      questionId: this.questionToAnswer.id || 10000,
+      questionId: this.questionToAnswer.id,
       questionText: this.questionToAnswer.text,
-      user: this.username,
+      username: this.user.username,
+      userId: this.user.userId,
       text: answerText,
     };
+    console.log("add answer", answer);
 
     this.socket.emit("add-answer", answer);
     this.answerInput.value = "";
   }
 
-  handleAnswerQuestionClick(question) {
+  handleSelectQuestionForAnswer(question) {
     this.questionToAnswer = question;
   }
 
   render() {
-    let { questionToAnswer, listQuestions, username } = this;
+    let { questionToAnswer, listQuestions, user } = this;
 
     const questions = html`
       <div>
@@ -135,7 +138,7 @@ export class ChatRoomElement extends LitElement {
               <div class="chat-question-container">
                 <chat-question
                   .message=${question}
-                  .loggedInUser=${username}
+                  .loggedInUser=${user}
                 ></chat-question>
               </div>
               <div>
@@ -148,7 +151,7 @@ export class ChatRoomElement extends LitElement {
                               .message=${
                                 question.answers[question.answers.length - 1]
                               }
-                              .loggedInUser=${username}
+                              .loggedInUser=${user}
                               .botAnswered=${question.botAnswered}
                             ></chat-answer>
                             </div>
@@ -162,14 +165,15 @@ export class ChatRoomElement extends LitElement {
                               <div class="chat-answer">
                                 <chat-answer
                                   .message=${answer}
-                                  .loggedInUser=${username}
+                                  .loggedInUser=${user}
                                   .botAnswered=${question.botAnswered}
                                 ></chat-answer>
                               </div>
                             `;
                           })}
                           <div class="question-footer">
-                            ${question.id === questionToAnswer.id
+                            ${questionToAnswer &&
+                            question.id === questionToAnswer.id
                               ? html`
                                   <div class="answer-question-container">
                                     <textarea
@@ -192,7 +196,9 @@ export class ChatRoomElement extends LitElement {
                                   <button
                                     class="add-answer-button"
                                     @click=${() => {
-                                      this.handleAnswerQuestionClick(question);
+                                      this.handleSelectQuestionForAnswer(
+                                        question
+                                      );
                                     }}
                                   >
                                     Add an answer
@@ -217,7 +223,9 @@ export class ChatRoomElement extends LitElement {
     return html`
       <div class="page-header">
         <div class="title-container">
-          <div class="title">#forter-chatroom</div>
+          <div class="title">
+            ${`#forter-chatroom | ${this.user.username || ""}`}
+          </div>
         </div>
       </div>
       <div class="conversation-container">
