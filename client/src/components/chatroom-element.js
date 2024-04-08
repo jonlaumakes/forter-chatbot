@@ -62,6 +62,8 @@ export class ChatRoomElement extends LitElement {
     });
 
     this.socket.on("question-added", (question) => {
+      console.log("question added", question);
+
       this.listQuestions = [...this.listQuestions, question];
       console.log("new question added - questions", this.listQuestions);
     });
@@ -95,7 +97,7 @@ export class ChatRoomElement extends LitElement {
 
   handleAnswerInputChange(e) {
     if (e.key === "Enter") {
-      this.addAnswer();
+      this.handleAddAnswer();
     }
     return;
   }
@@ -104,27 +106,29 @@ export class ChatRoomElement extends LitElement {
     const newQuestion = {
       user_id: this.user.user_id,
       username: this.user.username,
-      question_text: this.questionInput.value,
+      question_text: this.questionInput.value.trim().split(" ").join(""),
     };
 
     this.socket.emit("add-question", newQuestion);
     this.questionInput.value = "";
   }
 
-  addAnswer() {
+  handleAddAnswer() {
     let answerText = this.answerInput.value;
 
     if (!answerText.length) return;
 
     const answer = {
-      questionId: this.questionToAnswer.id,
-      questionText: this.questionToAnswer.text,
+      // question_id: this.questionToAnswer.id,
+      // questionText: this.questionToAnswer.text,
       username: this.user.username,
       user_id: this.user.user_id,
-      text: answerText,
+      text: answerText.trim().split(" ").join(""),
     };
 
-    this.socket.emit("add-answer", answer);
+    const questionId = this.questionToAnswer.id;
+
+    this.socket.emit("add-answer", questionId, answer);
     this.answerInput.value = "";
   }
 
@@ -192,7 +196,7 @@ export class ChatRoomElement extends LitElement {
                                   <div class="answer-question-container">
                                     <button
                                       class="reply-button"
-                                      @click=${this.addAnswer}
+                                      @click=${this.handleAddAnswer}
                                     >
                                       Reply
                                     </button>

@@ -148,7 +148,7 @@ async function ensureIndexExists(indexName) {
     } else {
       console.log(`index ${indexName} already exists`);
       // delete all the questions and add init question
-      await deleteAll("questions");
+      await deleteAllByIndex("questions");
       await createInitQuestion();
     }
   } catch (error) {
@@ -175,7 +175,7 @@ async function createInitQuestion() {
   }
 }
 
-async function deleteAll(indexName) {
+async function deleteAllByIndex(indexName) {
   try {
     await client.deleteByQuery({
       index: indexName,
@@ -227,7 +227,26 @@ async function createQuestion(questionData) {
   }
 }
 
-async function getQuestion(questionId) {
+async function addAnswerToQuestion(questionId, answer) {
+  try {
+    const result = await client.update({
+      index: "questions",
+      id: questionId,
+      body: {
+        script: {
+          source: "ctx._source.answers.add(params.answer)",
+          params: { answer: answer },
+        },
+      },
+    });
+    console.log(`Answer added to question`, result);
+  } catch (error) {
+    console.error("Error adding answer to question:", error);
+    throw error;
+  }
+}
+
+async function getQuestionById(questionId) {
   try {
     const document = await client.get({
       index: "questions",
@@ -253,66 +272,41 @@ io.on("connection", async (socket) => {
   /**
    * Add question
    */
-
-  // async function getQuestion(id) {
-  //   try {
-  //     const question = await client.
-  //   }catch (err) {
-
-  //   }
-  // }
-
   socket.on("add-question", async (question) => {
     console.log("question from UI", question);
-    // const cleandQuestionInput = cleanInput(question.question_text);
+    const isDuplicate = false;
 
-    const addResult = await createQuestion({
-      ...question,
-      question_text: cleanInput(question.question_text),
-    });
+    if (isDuplicate) {
+    } else {
+      const addResult = await createQuestion({
+        ...question,
+        question_text: cleanInput(question.question_text),
+      });
 
-    console.log("created", addResult);
-    const id = addResult._id;
+      console.log("created", addResult);
+      const questionId = addResult._id;
 
-    const createdQuestion = await getQuestion(id);
-    console.log("Retrieve created Question", createdQuestion._source);
-    io.emit("question-added", createdQuestion._source);
-    // let indexExists = checkIndexExists();
-
-    // handle a duplicate question
-    // retrieve answer from answerMap
-    // const lastAnswer = answerMap[cleandQuestionInput];
-    // if (lastAnswer) {
-    //   newQuestion.answers.push(lastAnswer);
-    //   newQuestion.botAnswered = true;
-    // }
-
-    // add question to questionList
-    // listQuestions.push(newQuestion);
-    // io.emit("question-added", newQuestion);
+      const createdQuestion = await getQuestionById(questionId);
+      console.log("Retrieve created Question", createdQuestion._source);
+      io.emit("question-added", {
+        ...createdQuestion._source,
+        id: questionId,
+      });
+    }
   });
 
   /**
    * Add answer
    */
-  socket.on("add-answer", (answer) => {
-    // update the answerMap with the latest answer
-    const cleanedQuestion = cleanInput(answer.questionText);
-    answerMap[cleanedQuestion] = answer;
-
-    // update the question (with new answer) in questionList
-    let questionAnswered;
-    for (let i = 0; i < listQuestions.length; i++) {
-      const question = listQuestions[i];
-      if (question.id === answer.questionId) {
-        question.answers.push({
-          ...answer,
-          created_at: new Date(),
-        });
-        questionAnswered = listQuestions[i];
-      }
-    }
-
-    io.emit("added-answer", questionAnswered);
+  socket.on("add-answer", async (questionId, answer) => {
+    console.log("add-answer payload", answer);
+    const result = await addAnswerToQuestion(questionId, answer);
+    const updatedQuestion = await getQuestionById(questionId);
+    console.log("updated question source", updatedQuestion._source);
+    console.log("updated question answers", updatedQuestion._source.answers);
+    io.emit("added-answer", {
+      ...updatedQuestion._source,
+      id: updatedQuestion._id,
+    });
   });
 });
