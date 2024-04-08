@@ -3,17 +3,38 @@ import httpServer from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import pkg from "@elastic/elasticsearch";
+
+const { Client } = pkg;
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+console.log("path");
+
+const client = new Client({
+  node: "https://localhost:9200",
+  auth: {
+    username: "elastic",
+    password: process.env.ELASTIC_PASSWORD,
+  },
+  tls: {
+    ca: fs.readFileSync("./http_ca.crt"),
+    rejectUnauthorized: false,
+  },
+});
+
 const http = httpServer.createServer(app);
 
 http.listen(3000, () => {
   console.log("listening on *:3000");
 });
+
+const indexName = "questions";
 
 const cleanInput = (text) => {
   return text.trim().split(" ").join("");
@@ -90,6 +111,7 @@ app.get("/", (req, res) => {
   res.status(200);
   res.json({ message: "Hello - Chatbot home" });
 });
+
 const createNewUser = () => {
   return {
     username: `User${Math.floor(Math.random(0, 1) * 100, 1)}`,
@@ -109,9 +131,60 @@ io.on("connection", (socket) => {
   );
 
   /**
+   * INITIALIZATION
+   */
+  // check if index exists
+  // create it or clear the records in 'questions' index
+  async function initialize() {
+    await ensureIndexExists(indexName);
+  }
+
+  initialize().then(() => {
+    console.log("db initiazation complete");
+  });
+
+  async function ensureIndexExists(indexName) {
+    const questionIndexExists = await client.indices.exists({
+      index: indexName,
+    });
+
+    console.log("question index exists", questionIndexExists);
+    // try {
+    //   client.indices.exists({ index: "questions" }).then(
+    //     (res) => {
+    //       console.log("res exists", res);
+    //       return res;
+    //     },
+    //     (err) => {
+    //       console.log("error checking index exists", err);
+    //       return false;
+    //     }
+    //   );
+    // } catch (error) {
+    //   console.log("error", error);
+    // }
+  }
+
+  /**
    * Add question
    */
+  async function createQuestion(questionData) {
+    try {
+      const result = await client.index({
+        index: "questions",
+        body: {
+          ...questionData,
+        },
+      });
+      console.log("Question created:", result);
+      return result;
+    } catch (error) {
+      console.error("Error creating question:", error);
+    }
+  }
+
   socket.on("add-question", (question) => {
+    console.log("add question from UI");
     const cleandQuestionInput = cleanInput(question.text);
     const newQuestion = {
       userId: question.userId,
@@ -123,17 +196,19 @@ io.on("connection", (socket) => {
       created_at: new Date(),
     };
 
+    // let indexExists = checkIndexExists();
+
     // handle a duplicate question
     // retrieve answer from answerMap
-    const lastAnswer = answerMap[cleandQuestionInput];
-    if (lastAnswer) {
-      newQuestion.answers.push(lastAnswer);
-      newQuestion.botAnswered = true;
-    }
+    // const lastAnswer = answerMap[cleandQuestionInput];
+    // if (lastAnswer) {
+    //   newQuestion.answers.push(lastAnswer);
+    //   newQuestion.botAnswered = true;
+    // }
 
     // add question to questionList
-    listQuestions.push(newQuestion);
-    io.emit("question-added", newQuestion);
+    // listQuestions.push(newQuestion);
+    // io.emit("question-added", newQuestion);
   });
 
   /**
