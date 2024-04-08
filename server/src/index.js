@@ -1,6 +1,6 @@
 import "./env.js";
 import express from "express";
-import httpServer from "http";
+import httpServer, { get } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { randomUUID } from "crypto";
@@ -42,60 +42,60 @@ const cleanInput = (text) => {
 const users = [
   {
     username: "Otto",
-    userId: randomUUID(),
+    user_id: randomUUID(),
   },
   {
     username: "Chip",
-    userId: randomUUID(),
+    user_id: randomUUID(),
   },
   {
     username: "Kylo",
-    userId: randomUUID(),
+    user_id: randomUUID(),
   },
 ];
 // init question list
-const listQuestions = [
-  {
-    id: randomUUID(),
-    username: users[0].username,
-    text: "how do you center a div?",
-    answers: [
-      {
-        username: users[1].username,
-        text: "read the docs!",
-        created_at: new Date() - 1000,
-      },
-      {
-        username: users[2].username,
-        text: "If he wanted to read docs, he wouldn't be on here.  Try using a flex container!!",
-        created_at: new Date() - 1000,
-      },
-    ],
-    botAnswered: false,
-    created_at: new Date() - 2000,
-  },
-  {
-    id: randomUUID(),
-    username: users[0].username,
-    text: "why does does my stomach hurt?",
-    answers: [
-      {
-        username: users[0].username,
-        text: "you keep eating grass at the park",
-        created_at: new Date() - 61000,
-      },
-    ],
-    botAnswered: false,
-    created_at: new Date() - 60000,
-  },
-];
+// const listQuestions = [
+//   {
+//     id: randomUUID(),
+//     username: users[0].username,
+//     text: "how do you center a div?",
+//     answers: [
+//       {
+//         username: users[1].username,
+//         text: "read the docs!",
+//         created_at: new Date() - 1000,
+//       },
+//       {
+//         username: users[2].username,
+//         text: "If he wanted to read docs, he wouldn't be on here.  Try using a flex container!!",
+//         created_at: new Date() - 1000,
+//       },
+//     ],
+//     botAnswered: false,
+//     created_at: new Date() - 2000,
+//   },
+//   {
+//     id: randomUUID(),
+//     username: users[0].username,
+//     text: "why does does my stomach hurt?",
+//     answers: [
+//       {
+//         username: users[0].username,
+//         text: "you keep eating grass at the park",
+//         created_at: new Date() - 61000,
+//       },
+//     ],
+//     botAnswered: false,
+//     created_at: new Date() - 60000,
+//   },
+// ];
 
 // init question map
-const answerMap = listQuestions.reduce((acc, question) => {
-  const input = cleanInput(question.text);
-  acc[input] = question.answers[question.answers.length - 1];
-  return acc;
-}, {});
+// const answerMap = listQuestions.reduce((acc, question) => {
+//   const input = cleanInput(question.text);
+//   acc[input] = question.answers[question.answers.length - 1];
+//   return acc;
+// }, {});
 
 // socket server
 const io = new Server(http, {
@@ -118,6 +118,127 @@ const createNewUser = () => {
   };
 };
 
+/**
+ * INITIALIZATION
+ */
+// check if index exists
+// create it or clear the records in 'questions' index
+async function initialize() {
+  try {
+    await ensureIndexExists(indexName);
+    console.log("DB initialization complete");
+  } catch (error) {
+    console.log("failed to initialize DB connection");
+  }
+}
+
+initialize();
+
+async function ensureIndexExists(indexName) {
+  try {
+    const questionIndexExists = await client.indices.exists({
+      index: indexName,
+    });
+
+    console.log("question index exists", questionIndexExists);
+    if (!questionIndexExists) {
+      // create index and init questions
+      await createInitQuestion();
+      // retrieve the init questions and emit
+    } else {
+      console.log(`index ${indexName} already exists`);
+      // delete all the questions and add init question
+      await deleteAll("questions");
+      await createInitQuestion();
+    }
+  } catch (error) {
+    console.log("error checking index exists", error);
+  }
+}
+
+async function createInitQuestion() {
+  try {
+    const addedQuestion = await client.index({
+      index: "questions",
+      body: {
+        user_id: randomUUID(),
+        username: "init guy",
+        question_text: "how do you center a div?",
+        answers: [],
+        bot_answered: false,
+        created_at: Date.now(),
+      },
+    });
+    console.log(`document created`, addedQuestion);
+  } catch (error) {
+    console.log("error creating index", error);
+  }
+}
+
+async function deleteAll(indexName) {
+  try {
+    await client.deleteByQuery({
+      index: indexName,
+      body: {
+        query: {
+          match_all: {},
+        },
+      },
+    });
+  } catch (err) {
+    console.log(`error deleting all in ${indexName}`);
+  }
+}
+
+async function getAllDocumentsByIndex(indexName) {
+  const result = await client.search({
+    index: "questions",
+    body: {
+      query: {
+        match_all: {},
+      },
+    },
+  });
+  console.log(result.hits.hits[0]._source);
+  return result.hits.hits;
+}
+
+async function createQuestion(questionData) {
+  console.log("create question - UI payload", questionData);
+
+  try {
+    const created = await client.create(
+      {
+        index: "questions",
+        id: randomUUID(),
+        body: {
+          ...questionData,
+          botAnswered: false,
+          answers: [],
+          created_at: Date.now(),
+        },
+      },
+      "questions"
+    );
+    console.log(`question document added: ${created}`);
+    return created;
+  } catch (error) {
+    console.log("error creating index", error);
+  }
+}
+
+async function getQuestion(questionId) {
+  try {
+    const document = await client.get({
+      index: "questions",
+      id: questionId,
+    });
+    return document;
+  } catch (err) {
+    console.log("error retrieving question", err);
+  }
+}
+
 io.on("connection", async (socket) => {
   const user = users.pop() || createNewUser();
   console.log("SERVER - new connection", user);
@@ -130,127 +251,32 @@ io.on("connection", async (socket) => {
   }
 
   /**
-   * INITIALIZATION
-   */
-  // check if index exists
-  // create it or clear the records in 'questions' index
-  async function initialize() {
-    try {
-      await ensureIndexExists(indexName);
-      console.log("DB initialization complete");
-    } catch (error) {
-      console.log("failed to initialize DB connection");
-    }
-  }
-
-  initialize();
-
-  async function ensureIndexExists(indexName) {
-    try {
-      const questionIndexExists = await client.indices.exists({
-        index: indexName,
-      });
-
-      console.log("question index exists", questionIndexExists);
-      if (!questionIndexExists) {
-        // create index and init questions
-        await createInitQuestion();
-        // retrieve the init questions and emit
-      } else {
-        console.log(`index ${indexName} already exists`);
-        // delete all the questions and add init question
-        await deleteAll("questions");
-        await createInitQuestion();
-        const questions = await getAllDocumentsByIndex("questions");
-        // TODO: get all the questions
-      }
-    } catch (error) {
-      console.log("error checking index exists", error);
-    }
-  }
-
-  async function createInitQuestion() {
-    try {
-      await client.index({
-        index: "questions",
-        body: {
-          user_id: randomUUID(),
-          username: "init guy",
-          question_text: "how do you center a div?",
-          answers: [],
-          bot_answered: false,
-          created_at: Date.now(),
-        },
-      });
-      console.log(`document created`);
-    } catch (error) {
-      console.log("error creating index", error);
-    }
-  }
-
-  async function deleteAll(indexName) {
-    try {
-      await client.deleteByQuery({
-        index: indexName,
-        body: {
-          query: {
-            match_all: {},
-          },
-        },
-      });
-    } catch (err) {
-      console.log(`error deleting all in ${indexName}`);
-    }
-  }
-
-  async function getAllDocumentsByIndex(indexName) {
-    const result = await client.search({
-      index: "questions",
-      body: {
-        query: {
-          match_all: {},
-        },
-      },
-    });
-    console.log(result.hits.hits[0]._source);
-    return result.hits.hits;
-  }
-
-  /**
    * Add question
    */
-  async function createQuestion(questionData) {
-    console.log("create question", questionData);
-    try {
-      await client.index({
-        index: "questions",
-        body: {
-          user_id: questionData.user_id,
-          username: "init guy",
-          question_text: "how do you center a div?",
-          user_id: randomUUID(),
-          answers: [],
-          botAnswered: false,
-          created_at: Date.now(),
-        },
-      });
-      console.log(`index ${indexName} created`);
-    } catch (error) {
-      console.log("error creating index", error);
-    }
-  }
 
-  socket.on("add-question", (question) => {
-    console.log("add question from UI");
-    const cleandQuestionInput = cleanInput(question.text);
+  // async function getQuestion(id) {
+  //   try {
+  //     const question = await client.
+  //   }catch (err) {
 
-    const newQuestion = {
+  //   }
+  // }
+
+  socket.on("add-question", async (question) => {
+    console.log("question from UI", question);
+    // const cleandQuestionInput = cleanInput(question.question_text);
+
+    const addResult = await createQuestion({
       ...question,
-      answers: [],
-      botAnswered: false,
-      created_at: Date.now(),
-    };
+      question_text: cleanInput(question.question_text),
+    });
 
+    console.log("created", addResult);
+    const id = addResult._id;
+
+    const createdQuestion = await getQuestion(id);
+    console.log("Retrieve created Question", createdQuestion._source);
+    io.emit("question-added", createdQuestion._source);
     // let indexExists = checkIndexExists();
 
     // handle a duplicate question

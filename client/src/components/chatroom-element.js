@@ -63,6 +63,7 @@ export class ChatRoomElement extends LitElement {
 
     this.socket.on("question-added", (question) => {
       this.listQuestions = [...this.listQuestions, question];
+      console.log("new question added - questions", this.listQuestions);
     });
 
     this.socket.on("added-answer", (updatedQuestion) => {
@@ -87,7 +88,7 @@ export class ChatRoomElement extends LitElement {
 
   handleQuestionInputChange(e) {
     if (e.key === "Enter") {
-      this.addQuestion();
+      this.handleAddQuestion();
     }
     return;
   }
@@ -99,7 +100,7 @@ export class ChatRoomElement extends LitElement {
     return;
   }
 
-  addQuestion() {
+  handleAddQuestion() {
     const newQuestion = {
       user_id: this.user.user_id,
       username: this.user.username,
@@ -244,7 +245,7 @@ export class ChatRoomElement extends LitElement {
           aria-label="New Question"
           @keydown=${this.handleQuestionInputChange}
         />
-        <button class="question-submit-button" @click=${this.addQuestion}>
+        <button class="question-submit-button" @click=${this.handleAddQuestion}>
           Ask
         </button>
       </div>
