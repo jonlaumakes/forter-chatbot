@@ -11,6 +11,7 @@
     "lit"
   ],
   "dependencies": {
+    "elasticsearch": "^16.7.3",
     "lit": "^2.2.4"
   },
   "devDependencies": {
