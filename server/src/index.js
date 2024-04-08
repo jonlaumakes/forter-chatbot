@@ -154,7 +154,11 @@ io.on("connection", (socket) => {
 
       console.log("question index exists", questionIndexExists);
       if (!questionIndexExists) {
-        // create the index
+        await createIndex(indexName);
+      } else {
+        console.log(`index ${indexName} already exists`);
+        const docs = await getAll("questions");
+        // TODO: get all the questions
       }
     } catch (error) {
       console.log("error checking index exists", error);
@@ -163,32 +167,35 @@ io.on("connection", (socket) => {
 
   async function createIndex(indexName) {
     try {
-      await client.indeces.create({
+      await client.index({
         index: indexName,
         body: {
-          mappings: {
-            properties: {
-              question: { type: "text" },
-              userId: { type: "keyword" },
-              username: { type: "text" },
-              created_at: { type: "date" },
-              answers: {
-                type: "nested",
-                properties: {
-                  answer: { type: "text" },
-                  userId: { type: "keyword" },
-                  username: { type: "text" },
-                  created_at: { type: "date" },
-                },
-              },
-            },
-          },
+          userId: randomUUID(),
+          username: "init guy",
+          question_text: "how do you center a div?",
+          userId: randomUUID(),
+          answers: [],
+          botAnswered: false,
+          created_at: Date.now(),
         },
       });
       console.log(`index ${indexName} created`);
     } catch (error) {
       console.log("error creating index", error);
     }
+  }
+
+  async function getAll(indexName) {
+    const result = await client.search({
+      index: "questions",
+      body: {
+        query: {
+          match_all: {},
+        },
+      },
+    });
+    console.log(result.hits.hits);
+    // return documents;
   }
 
   /**
