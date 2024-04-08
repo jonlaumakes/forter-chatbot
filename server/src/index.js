@@ -115,20 +115,20 @@ app.get("/", (req, res) => {
 const createNewUser = () => {
   return {
     username: `User${Math.floor(Math.random(0, 1) * 100, 1)}`,
-    userId: randomUUID(),
+    user_id: randomUUID(),
   };
 };
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const user = users.pop() || createNewUser();
   console.log("SERVER - new connection", user);
-  socket.emit(
-    "A new user connected",
-    user,
-    listQuestions.sort((a, b) => {
-      return a.created_at - b.created_at;
-    })
-  );
+
+  try {
+    const questions = await getAllDocumentsByIndex("questions");
+    socket.emit("A new user connected", user, questions);
+  } catch (err) {
+    console.log("error retrieving in socket");
+  }
 
   /**
    * INITIALIZATION
@@ -154,10 +154,15 @@ io.on("connection", (socket) => {
 
       console.log("question index exists", questionIndexExists);
       if (!questionIndexExists) {
-        await createIndex(indexName);
+        // create index and init questions
+        await createInitQuestion();
+        // retrieve the init questions and emit
       } else {
         console.log(`index ${indexName} already exists`);
-        const docs = await getAll("questions");
+        // delete all the questions and add init question
+        await deleteAll("questions");
+        await createInitQuestion();
+        const questions = await getAllDocumentsByIndex("questions");
         // TODO: get all the questions
       }
     } catch (error) {
@@ -165,15 +170,66 @@ io.on("connection", (socket) => {
     }
   }
 
-  async function createIndex(indexName) {
+  async function createInitQuestion() {
     try {
       await client.index({
-        index: indexName,
+        index: "questions",
         body: {
-          userId: randomUUID(),
+          user_id: randomUUID(),
           username: "init guy",
           question_text: "how do you center a div?",
-          userId: randomUUID(),
+          answers: [],
+          bot_answered: false,
+          created_at: Date.now(),
+        },
+      });
+      console.log(`document created`);
+    } catch (error) {
+      console.log("error creating index", error);
+    }
+  }
+
+  async function deleteAll(indexName) {
+    try {
+      await client.deleteByQuery({
+        index: indexName,
+        body: {
+          query: {
+            match_all: {},
+          },
+        },
+      });
+    } catch (err) {
+      console.log(`error deleting all in ${indexName}`);
+    }
+  }
+
+  async function getAllDocumentsByIndex(indexName) {
+    const result = await client.search({
+      index: "questions",
+      body: {
+        query: {
+          match_all: {},
+        },
+      },
+    });
+    console.log(result.hits.hits[0]._source);
+    return result.hits.hits;
+  }
+
+  /**
+   * Add question
+   */
+  async function createQuestion(questionData) {
+    console.log("create question", questionData);
+    try {
+      await client.index({
+        index: "questions",
+        body: {
+          user_id: questionData.user_id,
+          username: "init guy",
+          question_text: "how do you center a div?",
+          user_id: randomUUID(),
           answers: [],
           botAnswered: false,
           created_at: Date.now(),
@@ -185,48 +241,15 @@ io.on("connection", (socket) => {
     }
   }
 
-  async function getAll(indexName) {
-    const result = await client.search({
-      index: "questions",
-      body: {
-        query: {
-          match_all: {},
-        },
-      },
-    });
-    console.log(result.hits.hits);
-    // return documents;
-  }
-
-  /**
-   * Add question
-   */
-  async function createQuestion(questionData) {
-    try {
-      const result = await client.index({
-        index: "questions",
-        body: {
-          ...questionData,
-        },
-      });
-      console.log("Question created:", result);
-      return result;
-    } catch (error) {
-      console.error("Error creating question:", error);
-    }
-  }
-
   socket.on("add-question", (question) => {
     console.log("add question from UI");
     const cleandQuestionInput = cleanInput(question.text);
+
     const newQuestion = {
-      userId: question.userId,
-      username: question.username,
-      id: randomUUID(),
       ...question,
       answers: [],
       botAnswered: false,
-      created_at: new Date(),
+      created_at: Date.now(),
     };
 
     // let indexExists = checkIndexExists();

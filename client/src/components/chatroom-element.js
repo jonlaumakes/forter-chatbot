@@ -38,7 +38,7 @@ export class ChatRoomElement extends LitElement {
 
   constructor() {
     super();
-    this.user = { username: "", userId: null };
+    this.user = { username: "", user_id: null };
     this.questionToAnswer = null;
     this.listQuestions = [];
 
@@ -48,8 +48,17 @@ export class ChatRoomElement extends LitElement {
       },
     });
     this.socket.on("A new user connected", (user, questions) => {
+      console.log("on connection", questions);
       this.user = user;
-      this.listQuestions = questions;
+      let initQuestions = questions.reduce((acc, document) => {
+        const question = document._source;
+        question.id = document._id;
+        acc.push(question);
+        return acc;
+      }, []);
+      console.log("transformed questions", initQuestions);
+      console.log("first record", initQuestions[0]);
+      this.listQuestions = initQuestions;
     });
 
     this.socket.on("question-added", (question) => {
@@ -92,9 +101,9 @@ export class ChatRoomElement extends LitElement {
 
   addQuestion() {
     const newQuestion = {
-      userId: this.user.userId,
+      user_id: this.user.user_id,
       username: this.user.username,
-      text: this.questionInput.value,
+      question_text: this.questionInput.value,
     };
 
     this.socket.emit("add-question", newQuestion);
@@ -110,7 +119,7 @@ export class ChatRoomElement extends LitElement {
       questionId: this.questionToAnswer.id,
       questionText: this.questionToAnswer.text,
       username: this.user.username,
-      userId: this.user.userId,
+      user_id: this.user.user_id,
       text: answerText,
     };
 
@@ -133,13 +142,13 @@ export class ChatRoomElement extends LitElement {
             <div class="question-group-container">
               <div class="chat-question-container">
                 <chat-question
-                  .message=${question}
+                  .question=${question}
                   .loggedInUser=${user}
                 ></chat-question>
               </div>
               <div>
                 ${
-                  question.botAnswered
+                  question.bot_answered
                     ? html`
                         <div class="chat-answers-container">
                           <div class="chat-answer">
@@ -148,7 +157,7 @@ export class ChatRoomElement extends LitElement {
                                 question.answers[question.answers.length - 1]
                               }
                               .loggedInUser=${user}
-                              .botAnswered=${question.botAnswered}
+                              .bot_answered=${question.bot_answered}
                             ></chat-answer>
                             </div>
                           </div>
@@ -162,7 +171,7 @@ export class ChatRoomElement extends LitElement {
                                 <chat-answer
                                   .message=${answer}
                                   .loggedInUser=${user}
-                                  .botAnswered=${question.botAnswered}
+                                  .bot_answered=${question.bot_answered}
                                 ></chat-answer>
                               </div>
                             `;

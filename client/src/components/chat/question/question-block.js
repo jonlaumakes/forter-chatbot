@@ -9,13 +9,14 @@ export class QuestionComponent extends LitElement {
   static styles = [questionComponentStyles];
 
   static properties = {
-    message: { type: Object },
-    loggedInuser: { type: Object },
+    question: { type: Object },
+    loggedInUser: { type: Object },
   };
 
   render() {
-    const { message, loggedInUser } = this;
-    const timeAgo = getTimeAgo(this.message.created_at);
+    const { question, loggedInUser } = this;
+    console.log("question-block question", question);
+    const timeAgo = getTimeAgo(this.question.created_at);
 
     const userIcon = html`
       <svg
@@ -60,7 +61,7 @@ export class QuestionComponent extends LitElement {
     `;
 
     function getIcon() {
-      if (message.userId === loggedInUser.userId) {
+      if (question.user_id === loggedInUser.user_id) {
         return userIcon;
       }
       return otherUserIcon;
@@ -71,11 +72,11 @@ export class QuestionComponent extends LitElement {
         <div class="header">
           <div class="icon-container">${getIcon()}</div>
           <div class="user-info">
-            <span class="username">${message.username}</span>
+            <span class="username">${question.username}</span>
             <span class="timestamp">${timeAgo}</span>
           </div>
         </div>
-        <p class="message-text">${this.message.text}</p>
+        <p class="message-text">${this.question.question_text}</p>
       </div>
     `;
   }
