@@ -1,29 +1,28 @@
+import "./env.js";
 import express from "express";
 import httpServer from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { randomUUID } from "crypto";
-import fs from "fs";
 import pkg from "@elastic/elasticsearch";
 
-const { Client } = pkg;
+const ELASTIC_PASS = process.env.ELASTIC_PASSWORD;
+console.log("env", ELASTIC_PASS);
 
 const app = express();
+const { Client } = pkg;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-console.log("path");
-
 const client = new Client({
   node: "https://localhost:9200",
   auth: {
     username: "elastic",
-    password: process.env.ELASTIC_PASSWORD,
+    password: ELASTIC_PASS,
   },
   tls: {
-    ca: fs.readFileSync("./http_ca.crt"),
     rejectUnauthorized: false,
   },
 });
