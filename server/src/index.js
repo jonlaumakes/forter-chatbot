@@ -136,33 +136,59 @@ io.on("connection", (socket) => {
   // check if index exists
   // create it or clear the records in 'questions' index
   async function initialize() {
-    await ensureIndexExists(indexName);
+    try {
+      await ensureIndexExists(indexName);
+      console.log("DB initialization complete");
+    } catch (error) {
+      console.log("failed to initialize DB connection");
+    }
   }
 
-  initialize().then(() => {
-    console.log("db initiazation complete");
-  });
+  initialize();
 
   async function ensureIndexExists(indexName) {
-    const questionIndexExists = await client.indices.exists({
-      index: indexName,
-    });
+    try {
+      const questionIndexExists = await client.indices.exists({
+        index: indexName,
+      });
 
-    console.log("question index exists", questionIndexExists);
-    // try {
-    //   client.indices.exists({ index: "questions" }).then(
-    //     (res) => {
-    //       console.log("res exists", res);
-    //       return res;
-    //     },
-    //     (err) => {
-    //       console.log("error checking index exists", err);
-    //       return false;
-    //     }
-    //   );
-    // } catch (error) {
-    //   console.log("error", error);
-    // }
+      console.log("question index exists", questionIndexExists);
+      if (!questionIndexExists) {
+        // create the index
+      }
+    } catch (error) {
+      console.log("error checking index exists", error);
+    }
+  }
+
+  async function createIndex(indexName) {
+    try {
+      await client.indeces.create({
+        index: indexName,
+        body: {
+          mappings: {
+            properties: {
+              question: { type: "text" },
+              userId: { type: "keyword" },
+              username: { type: "text" },
+              created_at: { type: "date" },
+              answers: {
+                type: "nested",
+                properties: {
+                  answer: { type: "text" },
+                  userId: { type: "keyword" },
+                  username: { type: "text" },
+                  created_at: { type: "date" },
+                },
+              },
+            },
+          },
+        },
+      });
+      console.log(`index ${indexName} created`);
+    } catch (error) {
+      console.log("error creating index", error);
+    }
   }
 
   /**
