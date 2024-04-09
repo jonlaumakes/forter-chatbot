@@ -75,6 +75,7 @@ export class ChatRoomElement extends LitElement {
         }
         return question;
       });
+      console.log("updated question from answer add", this.listQuestions);
     });
   }
 
@@ -106,7 +107,7 @@ export class ChatRoomElement extends LitElement {
     const newQuestion = {
       user_id: this.user.user_id,
       username: this.user.username,
-      question_text: this.questionInput.value.trim().split(" ").join(""),
+      question_text: this.questionInput.value,
     };
 
     this.socket.emit("add-question", newQuestion);
@@ -119,11 +120,9 @@ export class ChatRoomElement extends LitElement {
     if (!answerText.length) return;
 
     const answer = {
-      // question_id: this.questionToAnswer.id,
-      // questionText: this.questionToAnswer.text,
       username: this.user.username,
       user_id: this.user.user_id,
-      text: answerText.trim().split(" ").join(""),
+      text: answerText,
     };
 
     const questionId = this.questionToAnswer.id;
@@ -158,11 +157,12 @@ export class ChatRoomElement extends LitElement {
                         <div class="chat-answers-container">
                           <div class="chat-answer">
                             <chat-answer
-                              .message=${
+                              .question=${question}
+                              .answer=${
                                 question.answers[question.answers.length - 1]
                               }
                               .loggedInUser=${user}
-                              .bot_answered=${question.bot_answered}
+                              .botAnswered=${question.bot_answered}
                             ></chat-answer>
                             </div>
                           </div>
@@ -174,9 +174,9 @@ export class ChatRoomElement extends LitElement {
                             return html`
                               <div class="chat-answer">
                                 <chat-answer
-                                  .message=${answer}
+                                  .answer=${answer}
                                   .loggedInUser=${user}
-                                  .bot_answered=${question.bot_answered}
+                                  .botAnswered=${question.bot_answered}
                                 ></chat-answer>
                               </div>
                             `;

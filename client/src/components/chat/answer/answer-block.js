@@ -9,14 +9,19 @@ export class AnswerComponent extends LitElement {
   static styles = [answerComponentStyles];
 
   static properties = {
-    message: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
     loggedInUser: { type: Object },
     botAnswered: { type: Boolean },
   };
 
   render() {
-    const { message, botAnswered, loggedInUser } = this;
-    const timeAgo = getTimeAgo(this.message.created_at || new Date());
+    const { question, answer, botAnswered, loggedInUser } = this;
+
+    console.log("answer-block - botAnswered", botAnswered);
+    console.log("answer-block - answer", answer);
+
+    const timeAgoAnswer = answer ? getTimeAgo(answer.created_at) : "";
 
     const robotIcon = html`
       <svg
@@ -79,7 +84,7 @@ export class AnswerComponent extends LitElement {
       if (botAnswered) {
         return robotIcon;
       }
-      if (message.userId === loggedInUser.userId) {
+      if (answer.user_id === loggedInUser.user_id) {
         return userIcon;
       }
       return otherUserIcon;
@@ -91,20 +96,22 @@ export class AnswerComponent extends LitElement {
           <div class="icon-container">${getIcon()}</div>
           <div class="user-info">
             <span class="username"
-              >${botAnswered ? "Chatroom Bot" : message.username}</span
+              >${botAnswered ? "Chatroom Bot" : answer.username}</span
             >
             ${!botAnswered
-              ? html`<span class="timestamp">${timeAgo}</span>`
+              ? html`<span class="timestamp">${timeAgoAnswer}</span>`
               : null}
           </div>
         </div>
         <p class="message-text">
           ${botAnswered
-            ? `This questions was answered before by ${this.message.username} ${timeAgo}:`
-            : this.message.text}
+            ? html`
+                <p>This questions was asked before by ${question.username}</p>
+              `
+            : html` <p>${answer.text}</p> `}
         </p>
-        ${botAnswered
-          ? html` <p class="bot-message-text">${this.message.text}</p> `
+        ${botAnswered && answer
+          ? html` <p class="bot-message-text">${`Answer: ${answer.text}`}</p> `
           : null}
       </div>
     `;

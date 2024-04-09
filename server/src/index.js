@@ -35,10 +35,6 @@ http.listen(3000, () => {
 
 const indexName = "questions";
 
-const cleanInput = (text) => {
-  return text.trim().split(" ").join("");
-};
-
 const users = [
   {
     username: "Otto",
@@ -53,49 +49,6 @@ const users = [
     user_id: randomUUID(),
   },
 ];
-// init question list
-// const listQuestions = [
-//   {
-//     id: randomUUID(),
-//     username: users[0].username,
-//     text: "how do you center a div?",
-//     answers: [
-//       {
-//         username: users[1].username,
-//         text: "read the docs!",
-//         created_at: new Date() - 1000,
-//       },
-//       {
-//         username: users[2].username,
-//         text: "If he wanted to read docs, he wouldn't be on here.  Try using a flex container!!",
-//         created_at: new Date() - 1000,
-//       },
-//     ],
-//     botAnswered: false,
-//     created_at: new Date() - 2000,
-//   },
-//   {
-//     id: randomUUID(),
-//     username: users[0].username,
-//     text: "why does does my stomach hurt?",
-//     answers: [
-//       {
-//         username: users[0].username,
-//         text: "you keep eating grass at the park",
-//         created_at: new Date() - 61000,
-//       },
-//     ],
-//     botAnswered: false,
-//     created_at: new Date() - 60000,
-//   },
-// ];
-
-// init question map
-// const answerMap = listQuestions.reduce((acc, question) => {
-//   const input = cleanInput(question.text);
-//   acc[input] = question.answers[question.answers.length - 1];
-//   return acc;
-// }, {});
 
 // socket server
 const io = new Server(http, {
@@ -227,6 +180,28 @@ async function createQuestion(questionData) {
   }
 }
 
+async function findQuestionDuplicate(questionText) {
+  console.log("find quesiton duplicate input", questionText);
+  try {
+    const searchResult = await client.search({
+      index: "questions",
+      body: {
+        query: {
+          match_phrase: {
+            question_text: questionText,
+          },
+        },
+      },
+    });
+
+    console.log("search result for exact question", searchResult);
+    return searchResult;
+  } catch (err) {
+    console.log("error finding question duplicate", error);
+    return false;
+  }
+}
+
 async function addAnswerToQuestion(questionId, answer) {
   try {
     const result = await client.update({
@@ -275,19 +250,38 @@ io.on("connection", async (socket) => {
   socket.on("add-question", async (question) => {
     console.log("question from UI", question);
     const isDuplicate = false;
+    // find question exact match where the text is the same
+    const exactMatchSearch = await findQuestionDuplicate(
+      question.question_text
+    );
+    const totalHits = exactMatchSearch.hits.total.value;
+    console.log("Total hits from search", totalHits);
+    // exact question match found
+    if (totalHits > 0) {
+      console.log("last hit", exactMatchSearch.hits.hits[0]);
+      const answers = exactMatchSearch.hits.hits[0]._source.answers;
+      console.log("exact match found - answers", answers);
 
-    if (isDuplicate) {
+      const returnedQuestion = {
+        ...question,
+        bot_answered: true,
+        answers: answers.length > 0 ? [answers[0]] : [],
+        created_at: Date.now(),
+      };
+
+      // emit question with previous answer with bot_answered flag and prior answer
+      socket.emit("question-added", returnedQuestion);
     } else {
       const addResult = await createQuestion({
         ...question,
-        question_text: cleanInput(question.question_text),
+        question_text: question.question_text.trim(),
       });
 
-      console.log("created", addResult);
+      // console.log("created", addResult);
       const questionId = addResult._id;
 
       const createdQuestion = await getQuestionById(questionId);
-      console.log("Retrieve created Question", createdQuestion._source);
+      // console.log("Retrieve created Question", createdQuestion._source);
       io.emit("question-added", {
         ...createdQuestion._source,
         id: questionId,
@@ -299,14 +293,18 @@ io.on("connection", async (socket) => {
    * Add answer
    */
   socket.on("add-answer", async (questionId, answer) => {
-    console.log("add-answer payload", answer);
-    const result = await addAnswerToQuestion(questionId, answer);
+    const updatedAnswer = { ...answer, created_at: Date.now() };
+    const result = await addAnswerToQuestion(questionId, updatedAnswer);
     const updatedQuestion = await getQuestionById(questionId);
-    console.log("updated question source", updatedQuestion._source);
-    console.log("updated question answers", updatedQuestion._source.answers);
-    io.emit("added-answer", {
+    // console.log("updated question source", updatedQuestion._source);
+    // console.log("updated question answers", updatedQuestion._source.answers);
+    const question = {
       ...updatedQuestion._source,
       id: updatedQuestion._id,
-    });
+      created_at: Date.now(),
+    };
+    console.log("add answer - updated question", question);
+
+    io.emit("added-answer", question);
   });
 });

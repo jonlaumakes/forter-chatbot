@@ -53,7 +53,7 @@ export const answerComponentStyles = css`
 
   .bot-message-text {
     margin-top: 0.4em;
-    margin-left: 3em;
+    margin-left: 4em;
     margin-bottom: 0.3em;
     font-weight: bold;
   }
