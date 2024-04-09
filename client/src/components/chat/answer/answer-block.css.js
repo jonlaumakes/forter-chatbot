@@ -16,6 +16,13 @@ export const answerComponentStyles = css`
       margin-left: 3em;
       margin-bottom: 0.3em;
     }
+    .similar-question-text {
+      color: #dedede;
+      font-size: 1em;
+      margin-top: 0.4em;
+      margin-left: 4em;
+      margin-bottom: 0.3em;
+    }
   }
 
   .header {

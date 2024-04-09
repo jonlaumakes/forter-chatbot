@@ -18,10 +18,6 @@ export class AnswerComponent extends LitElement {
   render() {
     const { question, answer, botAnswered, loggedInUser } = this;
 
-    console.log("answer block - question", question);
-    console.log("answer block - answer", answer);
-    console.log("answer block - botAnswered", botAnswered);
-
     const timeAgoAnswer = answer ? getTimeAgo(answer.created_at) : "";
     const duplicateUnansweredQuestionUser =
       question.duplicate_query_unanswered_user !== undefined
@@ -124,13 +120,16 @@ export class AnswerComponent extends LitElement {
       if (answer.bot_suggested) {
         return html`
           <p class="message-text">
-            Hi - I found a similar question asked by
-            <strong>${answer.similar_question_user}:</strong>
+            Hi - I found a similar question that was already answered:
           </p>
-          <p class="message-text">
-            <strong>Question: </strong>${`${answer.similar_question_text}`}
+          <p class="similar-question-text">
+            <strong>${answer.similar_question_user} - </strong>
+            ${answer.similar_question_text}
           </p>
-          <p class="message-text"><strong>Answer: </strong>${answer.text}</p>
+          <p class="similar-question-text">
+            <strong>${answer.username} - </strong>
+            ${answer.text}
+          </p>
         `;
       }
     }
