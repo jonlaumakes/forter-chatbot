@@ -141,90 +141,70 @@ export class ChatRoomElement extends LitElement {
     const questions = html`
       <div>
         <div class="scrollable-container">
+          <!-- questions -->
           ${listQuestions.map(
             (question, index) => html`
-            <div class="question-group-container">
-              <div class="chat-question-container">
-                <chat-question
-                  .question=${question}
-                  .loggedInUser=${user}
-                ></chat-question>
-              </div>
-              <div>
-                ${
-                  question.bot_answered
-                    ? html`
-                        <div class="chat-answers-container">
-                          <div class="chat-answer">
-                            <chat-answer
-                              .question=${question}
-                              .answer=${
-                                question.answers[question.answers.length - 1]
-                              }
-                              .loggedInUser=${user}
-                              .botAnswered=${question.bot_answered}
-                            ></chat-answer>
+              <div class="question-group-container">
+                <div class="chat-question-container">
+                  <chat-question
+                    .question=${question}
+                    .loggedInUser=${user}
+                  ></chat-question>
+                </div>
+                <div>
+                  <div class="chat-answers-container">
+                    <!-- answers -->
+                    ${question.answers.map((answer) => {
+                      return html`
+                        <div class="chat-answer">
+                          <chat-answer
+                            .question=${question}
+                            .loggedInUser=${user}
+                            .botAnswered=${question.bot_answered}
+                            .answer=${answer}
+                          ></chat-answer>
+                        </div>
+                      `;
+                    })}
+                    <!-- answer input -->
+                    <div class="question-footer">
+                      ${questionToAnswer && question.id === questionToAnswer.id
+                        ? html`
+                            <div class="answer-question-container">
+                              <textarea
+                                placeholder="What are your thoughts?"
+                                id="new-answer-input"
+                                class="answer-reply-input"
+                                @keydown=${this.handleAnswerInputChange}
+                              ></textarea>
                             </div>
-                          </div>
-                        </div>
-                      `
-                    : html`
-                        <div class="chat-answers-container">
-                          ${question.answers.map((answer) => {
-                            return html`
-                              <div class="chat-answer">
-                                <chat-answer
-                                  .answer=${answer}
-                                  .loggedInUser=${user}
-                                  .botAnswered=${question.bot_answered}
-                                ></chat-answer>
-                              </div>
-                            `;
-                          })}
-                          <div class="question-footer">
-                            ${questionToAnswer &&
-                            question.id === questionToAnswer.id
-                              ? html`
-                                  <div class="answer-question-container">
-                                    <textarea
-                                      placeholder="What are your thoughts?"
-                                      id="new-answer-input"
-                                      class="answer-reply-input"
-                                      @keydown=${this.handleAnswerInputChange}
-                                    ></textarea>
-                                  </div>
-                                  <div class="answer-question-container">
-                                    <button
-                                      class="reply-button"
-                                      @click=${this.handleAddAnswer}
-                                    >
-                                      Reply
-                                    </button>
-                                  </div>
-                                `
-                              : html`
-                                  <button
-                                    class="add-answer-button"
-                                    @click=${() => {
-                                      this.handleSelectQuestionForAnswer(
-                                        question
-                                      );
-                                    }}
-                                  >
-                                    Add an answer
-                                  </button>
-                                `}
-                          </div>
-                        </div>
-                      `
-                }
+                            <div class="answer-question-container">
+                              <button
+                                class="reply-button"
+                                @click=${this.handleAddAnswer}
+                              >
+                                Reply
+                              </button>
+                            </div>
+                          `
+                        : html`
+                            <button
+                              class="add-answer-button"
+                              @click=${() => {
+                                this.handleSelectQuestionForAnswer(question);
+                              }}
+                            >
+                              Add an answer
+                            </button>
+                          `}
+                    </div>
+                  </div>
+                  <div class="line-container">
+                    <hr />
+                  </div>
+                </div>
               </div>
-              <div class="line-container">
-                <hr />
-              </div>
-            </div>
-          </div>
-          `
+            `
           )}
         </div>
       </div>

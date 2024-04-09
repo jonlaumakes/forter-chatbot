@@ -115,7 +115,7 @@ async function createInitQuestion() {
       index: "questions",
       body: {
         user_id: randomUUID(),
-        username: "init guy",
+        username: "initguy123",
         question_text: "how do you center a div?",
         answers: [],
         bot_answered: false,
@@ -250,34 +250,51 @@ io.on("connection", async (socket) => {
   socket.on("add-question", async (question) => {
     console.log("question from UI", question);
     const isDuplicate = false;
-    // find question exact match where the text is the same
+    // check for duplicate quesstion
     const exactMatchSearch = await findQuestionDuplicate(
       question.question_text
     );
-    const totalHits = exactMatchSearch.hits.total.value;
-    console.log("Total hits from search", totalHits);
-    // exact question match found
-    if (totalHits > 0) {
-      console.log("last hit", exactMatchSearch.hits.hits[0]);
-      const answers = exactMatchSearch.hits.hits[0]._source.answers;
-      console.log("exact match found - answers", answers);
+    const exactHitsCount = exactMatchSearch.hits.total.value;
+    const strongestHit = exactMatchSearch.hits.hits[0];
+    const exactQuestionFound =
+      strongestHit._source.question_text === question.question_text;
 
-      const returnedQuestion = {
-        ...question,
-        bot_answered: true,
-        answers: answers.length > 0 ? [answers[0]] : [],
-        created_at: Date.now(),
-      };
+    if (exactHitsCount > 0 && exactQuestionFound) {
+      console.log("strongest exact match hit", strongestHit);
+      // double check for an exact match
+      if (exactQuestionFound) {
+        const answers = strongestHit._source.answers;
+        console.log("exact match found - answers", answers);
+        // prep answer sent back to user
+        const returnedAnswers = [];
+        if (answers.length > 0) {
+          const botAnswer = {
+            ...answers[0],
+            created_at: answers[0].created_at,
+          };
+          returnedAnswers.push(botAnswer);
+        }
 
-      // emit question with previous answer with bot_answered flag and prior answer
-      socket.emit("question-added", returnedQuestion);
+        const returnedQuestion = {
+          ...question,
+          bot_answered: true,
+          answers: returnedAnswers,
+          created_at: Date.now(),
+          duplicate_query_unanswered_user: strongestHit._source.username,
+        };
+        // emit question with previous answer with bot_answered flag and prior answer
+        socket.emit("question-added", returnedQuestion);
+      }
     } else {
+      // check for similar quesstion
+      // add an answer to the added question
+
       const addResult = await createQuestion({
         ...question,
         question_text: question.question_text.trim(),
       });
 
-      // console.log("created", addResult);
+      // console.log("created new question", addResult);
       const questionId = addResult._id;
 
       const createdQuestion = await getQuestionById(questionId);

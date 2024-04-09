@@ -18,10 +18,15 @@ export class AnswerComponent extends LitElement {
   render() {
     const { question, answer, botAnswered, loggedInUser } = this;
 
+    console.log("answer-block - question", botAnswered);
     console.log("answer-block - botAnswered", botAnswered);
     console.log("answer-block - answer", answer);
 
     const timeAgoAnswer = answer ? getTimeAgo(answer.created_at) : "";
+    const duplicateUnansweredQuestionUser =
+      question.duplicate_query_unanswered_user !== undefined
+        ? question.duplicate_query_unanswered_user
+        : null;
 
     const robotIcon = html`
       <svg
@@ -90,6 +95,47 @@ export class AnswerComponent extends LitElement {
       return otherUserIcon;
     }
 
+    function getAnswerText() {
+      // user provided answer
+      if (answer.text && !botAnswered) {
+        return html` <p class="message-text">${answer.text}</p> `;
+      }
+      // bot found an exact question match + no user answers
+      if (duplicateUnansweredQuestionUser && !answer) {
+        return html`
+          <p class="message-text">
+            ${`This question was asked before by: ${duplicateUnansweredQuestionUser}`}
+          </p>
+        `;
+      }
+      // bot found an exact question match + answer(s)
+      if (duplicateUnansweredQuestionUser && answer) {
+        return html`
+          <p class="message-text">
+            This question was asked before by
+            <strong>${duplicateUnansweredQuestionUser}</strong>
+            and answered by
+            <strong>${answer.username}</strong>:
+          </p>
+          <p class="message-text"><strong>Answer:</strong> ${answer.text}</p>
+        `;
+      }
+      // bot found a similar question
+      if (answer.similar_question) {
+        return html`
+          <p class="message-text">
+            ${`A similar question was asked by ${similar_question.username}`}
+          </p>
+          <p class="message-text">
+            ${`Question: ${similar_question.question_text}`}
+          </p>
+          <p class="message-text">
+            ${`Answer ${similar_question.answer_text}`}
+          </p>
+        `;
+      }
+    }
+
     return html`
       <div class="message-container">
         <div class="header">
@@ -103,16 +149,7 @@ export class AnswerComponent extends LitElement {
               : null}
           </div>
         </div>
-        <p class="message-text">
-          ${botAnswered
-            ? html`
-                <p>This questions was asked before by ${question.username}</p>
-              `
-            : html` <p>${answer.text}</p> `}
-        </p>
-        ${botAnswered && answer
-          ? html` <p class="bot-message-text">${`Answer: ${answer.text}`}</p> `
-          : null}
+        <div class="message-container">${getAnswerText()}</div>
       </div>
     `;
   }
