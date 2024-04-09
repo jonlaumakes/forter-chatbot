@@ -48,7 +48,6 @@ export class ChatRoomElement extends LitElement {
       },
     });
     this.socket.on("A new user connected", (user, questions) => {
-      console.log("on connection", questions);
       this.user = user;
       let initQuestions = questions.reduce((acc, document) => {
         const question = document._source;
@@ -56,16 +55,11 @@ export class ChatRoomElement extends LitElement {
         acc.push(question);
         return acc;
       }, []);
-      console.log("transformed questions", initQuestions);
-      console.log("first record", initQuestions[0]);
       this.listQuestions = initQuestions;
     });
 
     this.socket.on("question-added", (question) => {
-      console.log("question added", question);
-
       this.listQuestions = [...this.listQuestions, question];
-      console.log("new question added - questions", this.listQuestions);
     });
 
     this.socket.on("added-answer", (updatedQuestion) => {
@@ -75,7 +69,6 @@ export class ChatRoomElement extends LitElement {
         }
         return question;
       });
-      console.log("updated question from answer add", this.listQuestions);
     });
   }
 

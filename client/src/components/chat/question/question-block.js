@@ -15,7 +15,6 @@ export class QuestionComponent extends LitElement {
 
   render() {
     const { question, loggedInUser } = this;
-    console.log("question-block question", question);
     const timeAgo = getTimeAgo(this.question.created_at);
 
     const duplicateUnansweredQuestionUser =

@@ -93,7 +93,6 @@ async function ensureIndexExists(indexName) {
       index: indexName,
     });
 
-    console.log("question index exists", questionIndexExists);
     if (!questionIndexExists) {
       // create index and init questions
       await createInitQuestion();
@@ -276,6 +275,7 @@ io.on("connection", async (socket) => {
     const matchSearch = await findQuestionDuplicate(question.question_text);
     console.log("match search", matchSearch);
     const questionExactMatchCount = matchSearch.hits.total.value;
+
     if (questionExactMatchCount > 0) {
       strongestHit = matchSearch.hits.hits
         ? matchSearch.hits.hits[0]
@@ -287,10 +287,9 @@ io.on("connection", async (socket) => {
 
     // EXACT MATCH
     if (isDuplicate) {
-      console.log("strongest exact match hit", strongestHit);
       // double check new question and retrieved match
       const answers = strongestHit._source.answers;
-      console.log("exact match found - answers", answers);
+      console.log("exact match found - strongestHit", strongestHit);
       // prep answer sent back to user
       const returnedAnswers = [];
       if (answers.length > 0) {
@@ -312,33 +311,39 @@ io.on("connection", async (socket) => {
         returnedQuestion.duplicate_query_unanswered_user =
           strongestHit._source.username;
       }
-      // emit question with previous answer with bot_answered flag and prior answer
+      // emit question only to asking user
+      // include previous answer with bot_answered flag and prior answer
       socket.emit("question-added", returnedQuestion);
     } else {
       // SIMILAR MATCH or UNIQUE QUESTION
-      console.log(
-        "simular or unique - questionExactMatchCount",
-        questionExactMatchCount
-      );
-      const similarSearch = await findSimilarQuestion(question.question_text);
-      console.log("simular search ", similarSearch);
-      const similarMatchCount = similarSearch.hits.total.value;
+      // const similarSearch = await findSimilarQuestion(question.question_text);
+      // console.log("simular search ", similarSearch);
+      // const similarMatchCount = similarSearch.hits.total.value;
+      // let strongestSimilarHit = undefined;
+
+      // if (similarMatchCount > 0) {
+      //   strongestSimilarHit = similarSearch.hits.hits
+      //     ? similarSearch.hits.hits[0]
+      //     : undefined;
+      // }
+
       let answers = [];
 
       // SIMILAR MATCH - add a suggested answer to the added question
-      if (similarMatchCount > 0) {
+      if (questionExactMatchCount > 0) {
         console.log("found similar questions");
         const strongestAnswer = strongestHit._source.answers[0];
+        console.log("strongest answer for similar question", strongestAnswer);
 
-        const similarQuestionData = {
-          botSuggested: true,
+        const similarQuestionAnswerData = {
+          bot_suggested: true,
           ...strongestAnswer,
           username: "Chatroom Bot",
           similar_question_text: strongestHit._source.question_text,
           similar_question_user: strongestHit._source.username,
         };
 
-        answers.push(similarQuestionData);
+        answers.push(similarQuestionAnswerData);
       }
       // persist question
       const addResult = await createQuestion(

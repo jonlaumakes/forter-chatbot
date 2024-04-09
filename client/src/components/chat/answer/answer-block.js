@@ -18,9 +18,9 @@ export class AnswerComponent extends LitElement {
   render() {
     const { question, answer, botAnswered, loggedInUser } = this;
 
-    console.log("answer-block - question", question);
-    console.log("answer-block - botAnswered", botAnswered);
-    console.log("answer-block - answer", answer);
+    console.log("answer block - question", question);
+    console.log("answer block - answer", answer);
+    console.log("answer block - botAnswered", botAnswered);
 
     const timeAgoAnswer = answer ? getTimeAgo(answer.created_at) : "";
     const duplicateUnansweredQuestionUser =
@@ -97,11 +97,11 @@ export class AnswerComponent extends LitElement {
 
     function getAnswerText() {
       // user provided answer
-      if (answer.text && !botAnswered && !answer.botSuggested) {
+      if (answer.text && !botAnswered && !answer.bot_suggested) {
         return html` <p class="message-text">${answer.text}</p> `;
       }
       // bot found an exact question match + no user answers
-      if (duplicateUnansweredQuestionUser && !answer) {
+      if (duplicateUnansweredQuestionUser && !answer && !answer.bot_suggested) {
         return html`
           <p class="message-text">
             ${`This question was asked before by ${duplicateUnansweredQuestionUser}`}
@@ -109,7 +109,7 @@ export class AnswerComponent extends LitElement {
         `;
       }
       // bot found an exact question match + answer(s)
-      if (!duplicateUnansweredQuestionUser && answer) {
+      if (!duplicateUnansweredQuestionUser && answer && !answer.bot_suggested) {
         return html`
           <p class="message-text">
             This question was asked before by
@@ -121,7 +121,7 @@ export class AnswerComponent extends LitElement {
         `;
       }
       // bot found a similar question
-      if (answer.botSuggested) {
+      if (answer.bot_suggested) {
         return html`
           <p class="message-text">
             Hi - I found a similar question asked by
