@@ -300,8 +300,13 @@ io.on("connection", async (socket) => {
         returnedAnswers.push(botAnswer);
       }
 
-      const returnedQuestion = {
+      let questionWithOriginalUser = {
         ...question,
+        username: strongestHit._source.username,
+      };
+
+      const returnedQuestion = {
+        ...questionWithOriginalUser,
         bot_answered: true,
         answers: returnedAnswers,
         created_at: Date.now(),
@@ -315,18 +320,6 @@ io.on("connection", async (socket) => {
       // include previous answer with bot_answered flag and prior answer
       socket.emit("question-added", returnedQuestion);
     } else {
-      // SIMILAR MATCH or UNIQUE QUESTION
-      // const similarSearch = await findSimilarQuestion(question.question_text);
-      // console.log("simular search ", similarSearch);
-      // const similarMatchCount = similarSearch.hits.total.value;
-      // let strongestSimilarHit = undefined;
-
-      // if (similarMatchCount > 0) {
-      //   strongestSimilarHit = similarSearch.hits.hits
-      //     ? similarSearch.hits.hits[0]
-      //     : undefined;
-      // }
-
       let answers = [];
 
       // SIMILAR MATCH - add a suggested answer to the added question

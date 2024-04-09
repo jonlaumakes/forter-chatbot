@@ -113,7 +113,7 @@ export class AnswerComponent extends LitElement {
         return html`
           <p class="message-text">
             This question was asked before by
-            <strong>${duplicateUnansweredQuestionUser}</strong>
+            <strong>${question.username}</strong>
             and answered by
             <strong>${answer.username}</strong>:
           </p>
