@@ -6,10 +6,16 @@ export const answerComponentStyles = css`
   }
   .message-container {
     /* background-color: #e4e4e4; */
-    padding: 0.5em;
+    padding-bottom: 0.5em;
     padding-left: 1.3em;
     border-radius: 5px;
-    margin-bottom: 0.5em;
+    .message-text {
+      color: #dedede;
+      font-size: 1em;
+      margin-top: 0.4em;
+      margin-left: 3em;
+      margin-bottom: 0.3em;
+    }
   }
 
   .header {
@@ -41,14 +47,6 @@ export const answerComponentStyles = css`
     font-family: Helvetica, Arial, sans-serif;
     font-size: 0.87em;
     color: #667;
-  }
-
-  .message-text {
-    color: #dedede;
-    font-size: 1em;
-    margin-top: 0.4em;
-    margin-left: 3em;
-    margin-bottom: 0.3em;
   }
 
   .bot-message-text {

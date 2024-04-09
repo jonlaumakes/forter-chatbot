@@ -15,16 +15,18 @@ export default css`
   }
 
   .page-header {
-    display: flex;
-    justify-content: start;
     border-bottom: 2px solid rgba(128, 128, 128, 0.5);
-    margin-bottom: 2em;
     .title-container {
-      margin-left: 1em;
-      border-right: 2px solid rgba(128, 128, 128, 0.5);
+      display: flex;
+      justify-content: start;
+      padding-left: 2em;
+      padding-bottom: 1em;
       .title {
-        font-size: 3em;
         padding-right: 0.5em;
+      }
+      .username {
+        color: #3ededd;
+        padding-right: 2em;
       }
     }
   }

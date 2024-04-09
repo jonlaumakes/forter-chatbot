@@ -249,49 +249,51 @@ io.on("connection", async (socket) => {
    */
   socket.on("add-question", async (question) => {
     console.log("question from UI", question);
-    const isDuplicate = false;
-    // check for duplicate quesstion
-    const exactMatchSearch = await findQuestionDuplicate(
-      question.question_text
-    );
-    const exactHitsCount = exactMatchSearch.hits.total.value;
-    const strongestHit = exactMatchSearch.hits.hits[0];
-    const exactQuestionFound =
-      strongestHit._source.question_text === question.question_text;
+    let isDuplicate = false;
+    let strongestHit = undefined;
+    // check for duplicate question
+    const matchSearch = await findQuestionDuplicate(question.question_text);
+    const questionMatchCount = matchSearch.hits.total.value;
+    if (questionMatchCount > 0) {
+      strongestHit = matchSearch.hits.hits
+        ? matchSearch.hits.hits[0]
+        : undefined;
+      isDuplicate =
+        strongestHit &&
+        strongestHit._source.question_text === question.question_text;
+    }
 
-    if (exactHitsCount > 0 && exactQuestionFound) {
-      // EXACT MATCH
+    // EXACT MATCH
+    if (isDuplicate) {
       console.log("strongest exact match hit", strongestHit);
       // double check new question and retrieved match
-      if (exactQuestionFound) {
-        const answers = strongestHit._source.answers;
-        console.log("exact match found - answers", answers);
-        // prep answer sent back to user
-        const returnedAnswers = [];
-        if (answers.length > 0) {
-          const botAnswer = {
-            ...answers[0],
-            created_at: answers[0].created_at,
-          };
-          returnedAnswers.push(botAnswer);
-        }
-
-        const returnedQuestion = {
-          ...question,
-          bot_answered: true,
-          answers: returnedAnswers,
-          created_at: Date.now(),
-          duplicate_query_unanswered_user: strongestHit._source.username,
+      const answers = strongestHit._source.answers;
+      console.log("exact match found - answers", answers);
+      // prep answer sent back to user
+      const returnedAnswers = [];
+      if (answers.length > 0) {
+        const botAnswer = {
+          ...answers[0],
+          created_at: answers[0].created_at,
         };
-        // emit question with previous answer with bot_answered flag and prior answer
-        socket.emit("question-added", returnedQuestion);
+        returnedAnswers.push(botAnswer);
       }
+
+      const returnedQuestion = {
+        ...question,
+        bot_answered: true,
+        answers: returnedAnswers,
+        created_at: Date.now(),
+        duplicate_query_unanswered_user: strongestHit._source.username,
+      };
+      // emit question with previous answer with bot_answered flag and prior answer
+      socket.emit("question-added", returnedQuestion);
     } else {
-      // SIMILAR MATCH
-      // add a suggested answer to the added question
+      // SIMILAR MATCH or UNIQUE QUESTION
       let answers = [];
 
-      if (exactHitsCount > 0) {
+      // SIMILAR MATCH - add a suggested answer to the added question
+      if (questionMatchCount > 0) {
         const strongestAnswer = strongestHit._source.answers[0];
 
         const similarQuestionData = {
@@ -304,7 +306,7 @@ io.on("connection", async (socket) => {
 
         answers.push(similarQuestionData);
       }
-
+      // persist question
       const addResult = await createQuestion(
         {
           ...question,

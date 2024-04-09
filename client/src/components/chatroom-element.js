@@ -168,6 +168,7 @@ export class ChatRoomElement extends LitElement {
                     })}
                     <!-- answer input -->
                     <div class="question-footer">
+                      <!-- Add an answer selected && valid user question from duplicate question -->
                       ${questionToAnswer &&
                       question.id === questionToAnswer.id &&
                       !question.bot_answered
@@ -189,7 +190,13 @@ export class ChatRoomElement extends LitElement {
                               </button>
                             </div>
                           `
-                        : html`
+                        : null}
+                      <!-- valid user question to answer and not selected to be answered-->
+                      ${(!question.bot_answered && !questionToAnswer) ||
+                      (questionToAnswer &&
+                        !(question.id === questionToAnswer.id) &&
+                        !question.bot_answered)
+                        ? html`
                             <button
                               class="add-answer-button"
                               @click=${() => {
@@ -198,7 +205,8 @@ export class ChatRoomElement extends LitElement {
                             >
                               Add an answer
                             </button>
-                          `}
+                          `
+                        : null}
                     </div>
                   </div>
                   <div class="line-container">
@@ -215,9 +223,8 @@ export class ChatRoomElement extends LitElement {
     return html`
       <div class="page-header">
         <div class="title-container">
-          <div class="title">
-            ${`#forter-chatroom | ${this.user.username || ""}`}
-          </div>
+          <h1 class="title">#forter-chatroom</h1>
+          <h1 class="username">${`${this.user.username || ""}`}</h1>
         </div>
       </div>
       <div class="conversation-container">
