@@ -275,8 +275,8 @@ io.on("connection", async (socket) => {
     // check for duplicate question
     const matchSearch = await findQuestionDuplicate(question.question_text);
     console.log("match search", matchSearch);
-    const questionMatchCount = matchSearch.hits.total.value;
-    if (questionMatchCount > 0) {
+    const questionExactMatchCount = matchSearch.hits.total.value;
+    if (questionExactMatchCount > 0) {
       strongestHit = matchSearch.hits.hits
         ? matchSearch.hits.hits[0]
         : undefined;
@@ -306,20 +306,28 @@ io.on("connection", async (socket) => {
         bot_answered: true,
         answers: returnedAnswers,
         created_at: Date.now(),
-        duplicate_query_unanswered_user: strongestHit._source.username,
       };
+
+      if (answers.length < 1) {
+        returnedQuestion.duplicate_query_unanswered_user =
+          strongestHit._source.username;
+      }
       // emit question with previous answer with bot_answered flag and prior answer
       socket.emit("question-added", returnedQuestion);
     } else {
       // SIMILAR MATCH or UNIQUE QUESTION
-      console.log("simular or unique - questionMatchCount", questionMatchCount);
+      console.log(
+        "simular or unique - questionExactMatchCount",
+        questionExactMatchCount
+      );
       const similarSearch = await findSimilarQuestion(question.question_text);
       console.log("simular search ", similarSearch);
+      const similarMatchCount = similarSearch.hits.total.value;
       let answers = [];
 
       // SIMILAR MATCH - add a suggested answer to the added question
-      if (questionMatchCount > 0) {
-        console.log("SIMILAR", similarSearch);
+      if (similarMatchCount > 0) {
+        console.log("found similar questions");
         const strongestAnswer = strongestHit._source.answers[0];
 
         const similarQuestionData = {

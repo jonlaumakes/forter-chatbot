@@ -109,7 +109,7 @@ export class AnswerComponent extends LitElement {
         `;
       }
       // bot found an exact question match + answer(s)
-      if (duplicateUnansweredQuestionUser && answer) {
+      if (!duplicateUnansweredQuestionUser && answer) {
         return html`
           <p class="message-text">
             This question was asked before by
