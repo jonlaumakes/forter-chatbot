@@ -156,7 +156,7 @@ async function getAllDocumentsByIndex(indexName) {
   return result.hits.hits;
 }
 
-async function createQuestion(questionData) {
+async function createQuestion(questionData, answers) {
   console.log("create question - UI payload", questionData);
 
   try {
@@ -167,7 +167,7 @@ async function createQuestion(questionData) {
         body: {
           ...questionData,
           botAnswered: false,
-          answers: [],
+          answers: answers,
           created_at: Date.now(),
         },
       },
@@ -260,8 +260,9 @@ io.on("connection", async (socket) => {
       strongestHit._source.question_text === question.question_text;
 
     if (exactHitsCount > 0 && exactQuestionFound) {
+      // EXACT MATCH
       console.log("strongest exact match hit", strongestHit);
-      // double check for an exact match
+      // double check new question and retrieved match
       if (exactQuestionFound) {
         const answers = strongestHit._source.answers;
         console.log("exact match found - answers", answers);
@@ -286,13 +287,31 @@ io.on("connection", async (socket) => {
         socket.emit("question-added", returnedQuestion);
       }
     } else {
-      // check for similar quesstion
-      // add an answer to the added question
+      // SIMILAR MATCH
+      // add a suggested answer to the added question
+      let answers = [];
 
-      const addResult = await createQuestion({
-        ...question,
-        question_text: question.question_text.trim(),
-      });
+      if (exactHitsCount > 0) {
+        const strongestAnswer = strongestHit._source.answers[0];
+
+        const similarQuestionData = {
+          botSuggested: true,
+          ...strongestAnswer,
+          username: "Chatroom Bot",
+          similar_question_text: strongestHit._source.question_text,
+          similar_question_user: strongestHit._source.username,
+        };
+
+        answers.push(similarQuestionData);
+      }
+
+      const addResult = await createQuestion(
+        {
+          ...question,
+          question_text: question.question_text.trim(),
+        },
+        answers
+      );
 
       // console.log("created new question", addResult);
       const questionId = addResult._id;

@@ -168,7 +168,9 @@ export class ChatRoomElement extends LitElement {
                     })}
                     <!-- answer input -->
                     <div class="question-footer">
-                      ${questionToAnswer && question.id === questionToAnswer.id
+                      ${questionToAnswer &&
+                      question.id === questionToAnswer.id &&
+                      !question.bot_answered
                         ? html`
                             <div class="answer-question-container">
                               <textarea

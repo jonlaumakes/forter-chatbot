@@ -18,7 +18,7 @@ export class AnswerComponent extends LitElement {
   render() {
     const { question, answer, botAnswered, loggedInUser } = this;
 
-    console.log("answer-block - question", botAnswered);
+    console.log("answer-block - question", question);
     console.log("answer-block - botAnswered", botAnswered);
     console.log("answer-block - answer", answer);
 
@@ -86,7 +86,7 @@ export class AnswerComponent extends LitElement {
     `;
 
     function getIcon() {
-      if (botAnswered) {
+      if (botAnswered || answer.username === "Chatroom Bot") {
         return robotIcon;
       }
       if (answer.user_id === loggedInUser.user_id) {
@@ -97,7 +97,7 @@ export class AnswerComponent extends LitElement {
 
     function getAnswerText() {
       // user provided answer
-      if (answer.text && !botAnswered) {
+      if (answer.text && !botAnswered && !answer.botSuggested) {
         return html` <p class="message-text">${answer.text}</p> `;
       }
       // bot found an exact question match + no user answers
@@ -121,17 +121,16 @@ export class AnswerComponent extends LitElement {
         `;
       }
       // bot found a similar question
-      if (answer.similar_question) {
+      if (answer.botSuggested) {
         return html`
           <p class="message-text">
-            ${`A similar question was asked by ${similar_question.username}`}
+            Hi - I found a similar question asked by
+            <strong>${answer.similar_question_user}:</strong>
           </p>
           <p class="message-text">
-            ${`Question: ${similar_question.question_text}`}
+            <strong>Question: </strong>${`${answer.similar_question_text}`}
           </p>
-          <p class="message-text">
-            ${`Answer ${similar_question.answer_text}`}
-          </p>
+          <p class="message-text"><strong>Answer: </strong>${answer.text}</p>
         `;
       }
     }
