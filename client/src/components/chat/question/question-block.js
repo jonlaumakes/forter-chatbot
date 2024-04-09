@@ -18,6 +18,11 @@ export class QuestionComponent extends LitElement {
     console.log("question-block question", question);
     const timeAgo = getTimeAgo(this.question.created_at);
 
+    const duplicateUnansweredQuestionUser =
+      question.duplicate_query_unanswered_user !== undefined
+        ? question.duplicate_query_unanswered_user
+        : null;
+
     const userIcon = html`
       <svg
         width="2em"
@@ -67,6 +72,22 @@ export class QuestionComponent extends LitElement {
       return otherUserIcon;
     }
 
+    function getQuestionText() {
+      // bot found an exact question match + no user answers
+      if (duplicateUnansweredQuestionUser) {
+        return html`
+          <p class="message-text">${question.question_text}</p>
+          <p class="bot-help">
+            <strong>
+              ${`This question was asked before by ${duplicateUnansweredQuestionUser}. Currently, there no answers from the community`}</strong
+            >
+          </p>
+        `;
+      } else {
+        return html` <p class="message-text">${question.question_text}</p> `;
+      }
+    }
+
     return html`
       <div class="message-container">
         <div class="header">
@@ -76,7 +97,7 @@ export class QuestionComponent extends LitElement {
             <span class="timestamp">${timeAgo}</span>
           </div>
         </div>
-        <p class="message-text">${this.question.question_text}</p>
+        ${getQuestionText()}
       </div>
     `;
   }

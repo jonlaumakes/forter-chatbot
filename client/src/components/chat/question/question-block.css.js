@@ -50,6 +50,13 @@ export const questionComponentStyles = css`
     margin-bottom: 0.3em;
   }
 
+  .bot-help {
+    color: #dedede;
+    padding-top: 0.2em;
+    margin-left: 4em;
+    margin-bottom: 0.3em;
+  }
+
   .footer {
     display: flex;
     justify-content: space-between;

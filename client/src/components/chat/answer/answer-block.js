@@ -104,7 +104,7 @@ export class AnswerComponent extends LitElement {
       if (duplicateUnansweredQuestionUser && !answer) {
         return html`
           <p class="message-text">
-            ${`This question was asked before by: ${duplicateUnansweredQuestionUser}`}
+            ${`This question was asked before by ${duplicateUnansweredQuestionUser}`}
           </p>
         `;
       }

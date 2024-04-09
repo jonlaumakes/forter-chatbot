@@ -175,8 +175,8 @@ async function createQuestion(questionData, answers) {
     );
     console.log(`question document added: ${created}`);
     return created;
-  } catch (error) {
-    console.log("error creating index", error);
+  } catch (err) {
+    console.log("error creating index", err);
   }
 }
 
@@ -193,11 +193,32 @@ async function findQuestionDuplicate(questionText) {
         },
       },
     });
-
-    console.log("search result for exact question", searchResult);
     return searchResult;
   } catch (err) {
-    console.log("error finding question duplicate", error);
+    console.log("error finding question duplicate", err);
+    return false;
+  }
+}
+
+async function findSimilarQuestion(questionText) {
+  console.log("find similar quesitons", questionText);
+  try {
+    const searchResult = await client.search({
+      index: "questions",
+      body: {
+        query: {
+          more_like_this: {
+            fields: ["question_text"],
+            like: questionText,
+            min_term_freq: 1,
+            max_query_terms: 12,
+          },
+        },
+      },
+    });
+    return searchResult;
+  } catch (err) {
+    console.log("error finding similar question", err);
     return false;
   }
 }
@@ -253,6 +274,7 @@ io.on("connection", async (socket) => {
     let strongestHit = undefined;
     // check for duplicate question
     const matchSearch = await findQuestionDuplicate(question.question_text);
+    console.log("match search", matchSearch);
     const questionMatchCount = matchSearch.hits.total.value;
     if (questionMatchCount > 0) {
       strongestHit = matchSearch.hits.hits
@@ -290,10 +312,14 @@ io.on("connection", async (socket) => {
       socket.emit("question-added", returnedQuestion);
     } else {
       // SIMILAR MATCH or UNIQUE QUESTION
+      console.log("simular or unique - questionMatchCount", questionMatchCount);
+      const similarSearch = await findSimilarQuestion(question.question_text);
+      console.log("simular search ", similarSearch);
       let answers = [];
 
       // SIMILAR MATCH - add a suggested answer to the added question
       if (questionMatchCount > 0) {
+        console.log("SIMILAR", similarSearch);
         const strongestAnswer = strongestHit._source.answers[0];
 
         const similarQuestionData = {
