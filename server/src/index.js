@@ -1,10 +1,9 @@
-import "./env.js";
+// import "./env.js";
 import express from "express";
 import httpServer, { get } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { randomUUID } from "crypto";
-import pkg from "@elastic/elasticsearch";
 
 import {
   ensureIndexExists,
@@ -15,25 +14,11 @@ import {
   getQuestionById,
 } from "./handlers/question.js";
 
-const ELASTIC_PASS = process.env.ELASTIC_PASSWORD;
-
 const app = express();
-const { Client } = pkg;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const client = new Client({
-  node: "https://localhost:9200",
-  auth: {
-    username: "elastic",
-    password: ELASTIC_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
 
 const http = httpServer.createServer(app);
 
